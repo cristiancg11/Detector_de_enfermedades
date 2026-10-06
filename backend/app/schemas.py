@@ -134,3 +134,57 @@ class HealthCheckResponse(BaseModel):
     version: str
     gemini_configured: bool
     model: str
+
+
+class FarmerRole(str, Enum):
+    """
+    Agricultural practitioner role classification.
+    """
+    SMALLHOLDER = "Smallholder Farmer"
+    AGRONOMIST = "Agronomist / Extensionist"
+    COOP_MEMBER = "Cooperative Producer"
+    RESEARCHER = "Agricultural Researcher"
+
+
+class UserProfile(BaseModel):
+    """
+    Public profile information of an authenticated farmer or agronomist.
+    """
+    id: str
+    email: str
+    full_name: str
+    farm_name: str
+    municipality: str
+    role: FarmerRole
+    avatar_url: Optional[str] = None
+    created_at: str
+
+
+class UserRegisterRequest(BaseModel):
+    """
+    Payload for creating a new farmer user account.
+    """
+    email: str
+    password: str
+    full_name: str
+    farm_name: str = "Finca La Esperanza"
+    municipality: str = "Túquerres"
+    role: FarmerRole = FarmerRole.SMALLHOLDER
+
+
+class UserLoginRequest(BaseModel):
+    """
+    Payload for authenticating an existing user.
+    """
+    email: str
+    password: str
+
+
+class AuthResponse(BaseModel):
+    """
+    Authentication token and user profile payload.
+    """
+    access_token: str
+    token_type: str = "bearer"
+    user: UserProfile
+

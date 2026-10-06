@@ -4,17 +4,26 @@ Built with FastAPI, Pydantic, and Google Gemini 2.5 Flash Vision.
 """
 
 import logging
-from typing import List, Optional
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
+import hashlib
+import secrets
+import uuid
+from datetime import datetime, timezone
+from typing import Dict, List, Optional
+from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.schemas import (
+    AuthResponse,
     CropType,
     DiagnosticListResponse,
     DiagnosticResponse,
+    FarmerRole,
     HealthCheckResponse,
+    UserLoginRequest,
+    UserProfile,
+    UserRegisterRequest,
 )
 from app.services.gemini_service import gemini_service
 
@@ -42,7 +51,8 @@ cors_origins = settings.cors_origins_list
 logger.info("Configuring CORS middleware with origins: %s", cors_origins)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins if "*" not in cors_origins else ["*"],
+    allow_origins=cors_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,6 +60,177 @@ app.add_middleware(
 
 # In-memory store for diagnostic history persistence across API sessions
 in_memory_history: List[DiagnosticResponse] = []
+
+# In-memory user database with password hashes and token tracking
+def _hash_password(pw: str) -> str:
+    return hashlib.sha256(pw.strip().encode("utf-8")).hexdigest()
+
+users_db: Dict[str, dict] = {}
+token_db: Dict[str, str] = {}  # token -> email
+
+# Seed default demo farmer accounts for quick evaluation
+_demo_users = [
+    {
+        "id": "usr-carlos-guancha",
+        "email": "carlos@agroscan.co",
+        "password_hash": _hash_password("narino2026"),
+        "full_name": "Don Carlos Guancha",
+        "farm_name": "Finca Bella Vista",
+        "municipality": "Túquerres",
+        "role": FarmerRole.SMALLHOLDER,
+        "avatar_url": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
+        "created_at": "2026-01-15T08:00:00Z",
+    },
+    {
+        "id": "usr-elena-bastidas",
+        "email": "elena@agrosavia.co",
+        "password_hash": _hash_password("narino2026"),
+        "full_name": "Dra. Elena Bastidas",
+        "farm_name": "Centro Experimental Obonuco",
+        "municipality": "Pasto",
+        "role": FarmerRole.AGRONOMIST,
+        "avatar_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+        "created_at": "2026-02-10T09:30:00Z",
+    },
+]
+
+for _u in _demo_users:
+    users_db[_u["email"].lower()] = _u
+
+
+@app.post(
+    "/api/v1/auth/register",
+    response_model=AuthResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Authentication"],
+    summary="Register New Farmer Account",
+)
+async def register(payload: UserRegisterRequest):
+    """
+    Registers a new farmer or agronomist account.
+    """
+    email_clean = payload.email.strip().lower()
+    if email_clean in users_db:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this email address already exists.",
+        )
+
+    if len(payload.password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Password must be at least 6 characters long.",
+        )
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    new_user_id = f"usr-{uuid.uuid4().hex[:10]}"
+    avatar = f"https://api.dicebear.com/7.x/bottts/svg?seed={email_clean}"
+
+    user_record = {
+        "id": new_user_id,
+        "email": email_clean,
+        "password_hash": _hash_password(payload.password),
+        "full_name": payload.full_name.strip(),
+        "farm_name": payload.farm_name.strip(),
+        "municipality": payload.municipality.strip(),
+        "role": payload.role,
+        "avatar_url": avatar,
+        "created_at": now_iso,
+    }
+
+    users_db[email_clean] = user_record
+    token = secrets.token_urlsafe(32)
+    token_db[token] = email_clean
+
+    profile = UserProfile(
+        id=user_record["id"],
+        email=user_record["email"],
+        full_name=user_record["full_name"],
+        farm_name=user_record["farm_name"],
+        municipality=user_record["municipality"],
+        role=user_record["role"],
+        avatar_url=user_record["avatar_url"],
+        created_at=user_record["created_at"],
+    )
+
+    logger.info("New user registered: %s (%s)", email_clean, payload.role.value)
+    return AuthResponse(access_token=token, token_type="bearer", user=profile)
+
+
+@app.post(
+    "/api/v1/auth/login",
+    response_model=AuthResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["Authentication"],
+    summary="Authenticate Farmer Account",
+)
+async def login(payload: UserLoginRequest):
+    """
+    Validates user credentials and issues an access token.
+    """
+    email_clean = payload.email.strip().lower()
+    user_record = users_db.get(email_clean)
+
+    if not user_record or user_record["password_hash"] != _hash_password(payload.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password. Please verify your credentials.",
+        )
+
+    token = secrets.token_urlsafe(32)
+    token_db[token] = email_clean
+
+    profile = UserProfile(
+        id=user_record["id"],
+        email=user_record["email"],
+        full_name=user_record["full_name"],
+        farm_name=user_record["farm_name"],
+        municipality=user_record["municipality"],
+        role=user_record["role"],
+        avatar_url=user_record["avatar_url"],
+        created_at=user_record["created_at"],
+    )
+
+    logger.info("User authenticated: %s", email_clean)
+    return AuthResponse(access_token=token, token_type="bearer", user=profile)
+
+
+@app.get(
+    "/api/v1/auth/me",
+    response_model=UserProfile,
+    tags=["Authentication"],
+    summary="Get Current User Profile",
+)
+async def get_me(authorization: Optional[str] = Header(None)):
+    """
+    Returns the profile of the authenticated farmer.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization token required.",
+        )
+
+    token = authorization.replace("Bearer ", "").strip()
+    email = token_db.get(token)
+    if not email or email not in users_db:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session expired or invalid token.",
+        )
+
+    u = users_db[email]
+    return UserProfile(
+        id=u["id"],
+        email=u["email"],
+        full_name=u["full_name"],
+        farm_name=u["farm_name"],
+        municipality=u["municipality"],
+        role=u["role"],
+        avatar_url=u["avatar_url"],
+        created_at=u["created_at"],
+    )
+
 
 
 @app.get("/", tags=["Root"])
