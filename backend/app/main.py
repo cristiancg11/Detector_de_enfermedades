@@ -1,19 +1,34 @@
 """
 AgroScan AI - Andean Crop Phytosanitary Diagnostic API.
-Built with FastAPI, Pydantic, and Google Gemini 2.5 Flash Vision.
+Built with FastAPI, Pydantic, MongoDB Atlas (Motor), and Google Gemini 2.5 Flash Vision.
 """
 
 import logging
-import hashlib
-import secrets
 import uuid
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
-from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile, status
+from typing import List, Optional
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.auth import (
+    create_access_token,
+    get_current_user,
+    get_current_user_optional,
+    get_password_hash,
+    get_user_by_email,
+    save_user,
+    verify_password,
+)
 from app.config import settings
+from app.db import (
+    diagnostics_collection,
+    init_db,
+    is_mongo_connected,
+    ping_db,
+    users_collection,
+)
 from app.schemas import (
     AuthResponse,
     CropType,
@@ -34,16 +49,34 @@ logging.basicConfig(
 )
 logger = logging.getLogger("agroscan.api")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Application lifecycle management: initializes database indexes on startup.
+    """
+    logger.info("Starting up AgroScan AI API...")
+    try:
+        await init_db()
+        logger.info("Database indexes initialized successfully.")
+    except Exception as exc:
+        logger.warning("Initial DB index creation skipped: %s", exc)
+    yield
+    logger.info("Shutting down AgroScan AI API...")
+
+
 # Initialize FastAPI Application
 app = FastAPI(
     title="AgroScan AI API",
     description=(
-        "Phytosanitary diagnostic REST API powered by Google Gemini 2.5 Flash vision with "
-        "structured agronomic outputs. Designed for smallholder Andean farmers in Nariño, Colombia."
+        "Phytosanitary diagnostic REST API powered by Google Gemini 2.5 Flash vision and "
+        "MongoDB Atlas persistence with JWT farmer authentication. "
+        "Designed for smallholder Andean farmers in Nariño, Colombia."
     ),
-    version="1.0.0",
+    version="1.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Configure CORS Middleware for web frontend integration
@@ -58,45 +91,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory store for diagnostic history persistence across API sessions
+# In-memory store for diagnostic history fallback across offline test sessions
 in_memory_history: List[DiagnosticResponse] = []
 
-# In-memory user database with password hashes and token tracking
-def _hash_password(pw: str) -> str:
-    return hashlib.sha256(pw.strip().encode("utf-8")).hexdigest()
 
-users_db: Dict[str, dict] = {}
-token_db: Dict[str, str] = {}  # token -> email
-
-# Seed default demo farmer accounts for quick evaluation
-_demo_users = [
-    {
-        "id": "usr-carlos-guancha",
-        "email": "carlos@agroscan.co",
-        "password_hash": _hash_password("narino2026"),
-        "full_name": "Don Carlos Guancha",
-        "farm_name": "Finca Bella Vista",
-        "municipality": "Túquerres",
-        "role": FarmerRole.SMALLHOLDER,
-        "avatar_url": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
-        "created_at": "2026-01-15T08:00:00Z",
-    },
-    {
-        "id": "usr-elena-bastidas",
-        "email": "elena@agrosavia.co",
-        "password_hash": _hash_password("narino2026"),
-        "full_name": "Dra. Elena Bastidas",
-        "farm_name": "Centro Experimental Obonuco",
-        "municipality": "Pasto",
-        "role": FarmerRole.AGRONOMIST,
-        "avatar_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-        "created_at": "2026-02-10T09:30:00Z",
-    },
-]
-
-for _u in _demo_users:
-    users_db[_u["email"].lower()] = _u
-
+# ============================================================================
+# AUTHENTICATION ENDPOINTS (JWT + MongoDB Atlas)
+# ============================================================================
 
 @app.post(
     "/api/v1/auth/register",
@@ -107,10 +108,14 @@ for _u in _demo_users:
 )
 async def register(payload: UserRegisterRequest):
     """
-    Registers a new farmer or agronomist account.
+    Creates a new farmer or agronomist account, hashes the password with bcrypt,
+    persists into MongoDB Atlas, and returns a signed JWT access token.
     """
     email_clean = payload.email.strip().lower()
-    if email_clean in users_db:
+
+    # Check for existing account
+    existing = await get_user_by_email(email_clean)
+    if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="An account with this email address already exists.",
@@ -129,18 +134,20 @@ async def register(payload: UserRegisterRequest):
     user_record = {
         "id": new_user_id,
         "email": email_clean,
-        "password_hash": _hash_password(payload.password),
+        "password_hash": get_password_hash(payload.password),
         "full_name": payload.full_name.strip(),
         "farm_name": payload.farm_name.strip(),
         "municipality": payload.municipality.strip(),
-        "role": payload.role,
+        "role": payload.role.value if isinstance(payload.role, FarmerRole) else str(payload.role),
         "avatar_url": avatar,
         "created_at": now_iso,
     }
 
-    users_db[email_clean] = user_record
-    token = secrets.token_urlsafe(32)
-    token_db[token] = email_clean
+    # Save to MongoDB Atlas / fallback
+    await save_user(user_record)
+
+    # Issue JWT token
+    token = create_access_token({"sub": new_user_id, "email": email_clean})
 
     profile = UserProfile(
         id=user_record["id"],
@@ -148,12 +155,12 @@ async def register(payload: UserRegisterRequest):
         full_name=user_record["full_name"],
         farm_name=user_record["farm_name"],
         municipality=user_record["municipality"],
-        role=user_record["role"],
+        role=FarmerRole(user_record["role"]) if isinstance(user_record["role"], str) else user_record["role"],
         avatar_url=user_record["avatar_url"],
         created_at=user_record["created_at"],
     )
 
-    logger.info("New user registered: %s (%s)", email_clean, payload.role.value)
+    logger.info("New farmer registered: %s (%s)", email_clean, profile.role.value)
     return AuthResponse(access_token=token, token_type="bearer", user=profile)
 
 
@@ -166,19 +173,19 @@ async def register(payload: UserRegisterRequest):
 )
 async def login(payload: UserLoginRequest):
     """
-    Validates user credentials and issues an access token.
+    Validates farmer credentials against MongoDB Atlas bcrypt hash and returns a JWT access token.
     """
     email_clean = payload.email.strip().lower()
-    user_record = users_db.get(email_clean)
+    user_record = await get_user_by_email(email_clean)
 
-    if not user_record or user_record["password_hash"] != _hash_password(payload.password):
+    if not user_record or not verify_password(payload.password, user_record.get("password_hash", "")):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password. Please verify your credentials.",
         )
 
-    token = secrets.token_urlsafe(32)
-    token_db[token] = email_clean
+    # Issue JWT access token
+    token = create_access_token({"sub": user_record["id"], "email": user_record["email"]})
 
     profile = UserProfile(
         id=user_record["id"],
@@ -186,12 +193,12 @@ async def login(payload: UserLoginRequest):
         full_name=user_record["full_name"],
         farm_name=user_record["farm_name"],
         municipality=user_record["municipality"],
-        role=user_record["role"],
-        avatar_url=user_record["avatar_url"],
+        role=FarmerRole(user_record["role"]) if isinstance(user_record["role"], str) else user_record["role"],
+        avatar_url=user_record.get("avatar_url"),
         created_at=user_record["created_at"],
     )
 
-    logger.info("User authenticated: %s", email_clean)
+    logger.info("Farmer authenticated: %s", email_clean)
     return AuthResponse(access_token=token, token_type="bearer", user=profile)
 
 
@@ -201,37 +208,16 @@ async def login(payload: UserLoginRequest):
     tags=["Authentication"],
     summary="Get Current User Profile",
 )
-async def get_me(authorization: Optional[str] = Header(None)):
+async def get_me(current_user: UserProfile = Depends(get_current_user)):
     """
-    Returns the profile of the authenticated farmer.
+    Returns the profile of the currently authenticated farmer based on JWT validation.
     """
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization token required.",
-        )
-
-    token = authorization.replace("Bearer ", "").strip()
-    email = token_db.get(token)
-    if not email or email not in users_db:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Session expired or invalid token.",
-        )
-
-    u = users_db[email]
-    return UserProfile(
-        id=u["id"],
-        email=u["email"],
-        full_name=u["full_name"],
-        farm_name=u["farm_name"],
-        municipality=u["municipality"],
-        role=u["role"],
-        avatar_url=u["avatar_url"],
-        created_at=u["created_at"],
-    )
+    return current_user
 
 
+# ============================================================================
+# SYSTEM HEALTH & ROOT
+# ============================================================================
 
 @app.get("/", tags=["Root"])
 async def root():
@@ -240,9 +226,10 @@ async def root():
     """
     return {
         "service": "AgroScan AI Phytosanitary API",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "target_region": "Nariño, Colombia (Andean Highlands)",
         "supported_crops": [c.value for c in CropType],
+        "database": "MongoDB Atlas",
         "model": "gemini-2.5-flash",
         "docs": "/docs",
     }
@@ -252,16 +239,22 @@ async def root():
 @app.get("/api/v1/health", response_model=HealthCheckResponse, tags=["Health"])
 async def health_check():
     """
-    Service health check endpoint reporting status and Gemini API key configuration.
+    Service health check endpoint reporting status, Gemini API, and MongoDB Atlas connectivity.
     """
+    mongo_ok = await ping_db() if is_mongo_connected() else False
     return HealthCheckResponse(
         status="healthy",
         service="AgroScan AI",
-        version="1.0.0",
+        version="1.1.0",
         gemini_configured=gemini_service.is_configured,
+        mongodb_connected=mongo_ok,
         model="gemini-2.5-flash",
     )
 
+
+# ============================================================================
+# DIAGNOSTICS & PERSISTENCE (Gemini 2.5 Flash + MongoDB Atlas)
+# ============================================================================
 
 @app.post(
     "/api/v1/diagnose",
@@ -271,17 +264,18 @@ async def health_check():
     summary="Diagnose Andean Crop Image",
     description=(
         "Receives a multipart/form-data upload with plant image bytes and plot metadata. "
-        "Processes the visual symptoms using Gemini 2.5 Flash vision and returns a structured "
-        "diagnostic report with organic vs chemical treatment pathways."
+        "Processes the visual symptoms using Gemini 2.5 Flash vision, associates the diagnostic "
+        "with the authenticated farmer, and persists the record into MongoDB Atlas."
     ),
 )
 async def diagnose_crop(
     image: UploadFile = File(..., description="High-resolution or worker-optimized plant photo"),
     crop_type: str = Form(..., description="Crop kind: Potato, Coffee, Corn, or Tomato"),
     plot_identifier: str = Form("Plot A - Main Terrace", description="Farm plot / lot identifier"),
+    current_user: Optional[UserProfile] = Depends(get_current_user_optional),
 ):
     """
-    Handles image analysis and phytosanitary diagnosis generation.
+    Handles image analysis and phytosanitary diagnosis generation, persisting output to MongoDB Atlas.
     """
     # Validate crop type input against supported Andean crop enums
     normalized_crop = None
@@ -330,10 +324,25 @@ async def diagnose_crop(
             plot_identifier=plot_identifier.strip() or "General Plot",
         )
 
-        # Prepend to in-memory history cache
-        in_memory_history.insert(0, diagnostic_result)
+        # Associate authenticated user ID
+        user_id = current_user.id if current_user else "usr-guest"
+        diagnostic_result.user_id = user_id
 
-        # Limit cache size to prevent memory leaks in long-running instances
+        # Persist diagnostic directly into MongoDB Atlas
+        if diagnostics_collection is not None:
+            try:
+                diag_doc = diagnostic_result.model_dump()
+                await diagnostics_collection.insert_one(diag_doc)
+                logger.info(
+                    "Persisted diagnosis %s to MongoDB Atlas for user %s",
+                    diagnostic_result.id,
+                    user_id,
+                )
+            except Exception as exc:
+                logger.error("Failed to persist diagnosis to MongoDB Atlas: %s", exc)
+
+        # Prepend to in-memory history cache as fallback
+        in_memory_history.insert(0, diagnostic_result)
         if len(in_memory_history) > 100:
             in_memory_history.pop()
 
@@ -354,16 +363,47 @@ async def diagnose_crop(
     response_model=DiagnosticListResponse,
     tags=["Diagnostics"],
     summary="Retrieve Diagnostic History",
-    description="Returns recent phytosanitary diagnostic sessions, optionally filtered by farm plot identifier.",
+    description="Returns phytosanitary diagnostic sessions queried from MongoDB Atlas filtered by user and plot.",
 )
 async def get_diagnostic_history(
     plot_identifier: Optional[str] = None,
     limit: int = 20,
+    current_user: Optional[UserProfile] = Depends(get_current_user_optional),
 ):
     """
-    Retrieves previous diagnoses stored during server uptime.
+    Retrieves previous diagnoses stored in MongoDB Atlas, filtered by user plots.
     """
+    items: List[DiagnosticResponse] = []
+
+    # Query MongoDB Atlas if configured
+    if diagnostics_collection is not None:
+        try:
+            query_filter: dict = {}
+            if current_user:
+                query_filter["user_id"] = current_user.id
+            if plot_identifier and plot_identifier.strip():
+                query_filter["plot_identifier"] = {
+                    "$regex": plot_identifier.strip(),
+                    "$options": "i",
+                }
+
+            cursor = (
+                diagnostics_collection.find(query_filter, {"_id": 0})
+                .sort("created_at", -1)
+                .limit(limit)
+            )
+            raw_docs = await cursor.to_list(length=limit)
+            if raw_docs:
+                items = [DiagnosticResponse(**doc) for doc in raw_docs]
+                total = await diagnostics_collection.count_documents(query_filter)
+                return DiagnosticListResponse(total=total, items=items)
+        except Exception as exc:
+            logger.warning("MongoDB Atlas history query error: %s. Falling back to local cache.", exc)
+
+    # Fallback to in-memory history
     filtered = in_memory_history
+    if current_user:
+        filtered = [item for item in filtered if item.user_id == current_user.id or not item.user_id]
     if plot_identifier and plot_identifier.strip():
         plot_clean = plot_identifier.strip().lower()
         filtered = [item for item in filtered if plot_clean in item.plot_identifier.lower()]
