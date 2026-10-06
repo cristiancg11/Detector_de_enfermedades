@@ -96,6 +96,16 @@ The system integrates client-side image processing via **Web Workers** (`Offscre
 - `OffscreenCanvas` resizes the image down to `1024x1024` max bounding box and compresses to JPEG `0.85` quality.
 - Displays real-time worker metrics: dimension reduction, KB savings (85–95% compression), and execution time (ms).
 
+### 💬 Interactive Agronomic Follow-up Chat Assistant (Gemini 2.5 Flash)
+- **Grounded Technical Consultation**: Farmers can ask follow-up questions immediately after receiving a diagnostic report.
+- **Andean Field Realities**:
+  - **Backpack Sprayer Dosages**: Exact chemical/organic volume calibration for standard 20-Liter agricultural backpack sprayers (*bomba de espalda de 20L*).
+  - **Rainfastness & Weather Windows**: Minimum drying hours required before mountain precipitation and fog condensation.
+  - **Safety & PPE**: Personal protective equipment guidelines and pre-harvest intervals (*días de carencia*).
+  - **Organic vs. Chemical Timing**: Safe application windows during crop flowering (*anthesis*) and avoiding scorch on blossom petals.
+- **Dynamic Quick-Tap Chips**: Every response returns 2–3 structured suggested follow-up questions for 1-click mobile tap queries.
+- **MongoDB Atlas Thread Persistence**: Messages are stored in the diagnostic document's `chat_thread` array and cached locally in `AgronomicChatThread`.
+
 ---
 
 ## 4. Local Execution & Step-by-Step Setup
@@ -183,6 +193,7 @@ The system integrates client-side image processing via **Web Workers** (`Offscre
 | `POST` | `/api/v1/auth/login` | Authenticate farmer with credentials and receive JWT | No |
 | `GET` | `/api/v1/auth/me` | Fetch active farmer profile details | **Yes** (Bearer JWT) |
 | `POST` | `/api/v1/diagnose` | Analyze crop image via Gemini 2.5 Flash and persist in Atlas | Optional (Bearer JWT) |
+| `POST` | `/api/v1/diagnose/{diagnostic_id}/chat` | Contextual agronomic follow-up consultation with Gemini 2.5 Flash | Optional (Bearer JWT) |
 | `GET` | `/api/v1/history` | Query diagnostic history from MongoDB Atlas filtered by plot | Optional (Bearer JWT) |
 | `GET` | `/api/v1/health` | System health check (Gemini API & MongoDB connectivity) | No |
 | `GET` | `/` | Root info endpoint | No |
