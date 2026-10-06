@@ -69,4 +69,95 @@ export class ApiService {
       model: 'gemini-2.5-flash',
     };
   }
+
+  /**
+   * Registers a new user account on the backend.
+   */
+  public static async register(data: {
+    email: string;
+    password: string;
+    fullName: string;
+    farmName: string;
+    municipality: string;
+    role: string;
+  }): Promise<{ token: string; user: any }> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: data.email,
+        password: data.password,
+        full_name: data.fullName,
+        farm_name: data.farmName,
+        municipality: data.municipality,
+        role: data.role,
+      }),
+    });
+
+    if (!response.ok) {
+      let msg = 'Registration failed';
+      try {
+        const err = await response.json();
+        msg = err.detail || msg;
+      } catch {
+        // fallback
+      }
+      throw new Error(msg);
+    }
+
+    const resData = await response.json();
+    return {
+      token: resData.access_token,
+      user: {
+        id: resData.user.id,
+        email: resData.user.email,
+        fullName: resData.user.full_name,
+        farmName: resData.user.farm_name,
+        municipality: resData.user.municipality,
+        role: resData.user.role,
+        avatarUrl: resData.user.avatar_url,
+        createdAt: resData.user.created_at,
+      },
+    };
+  }
+
+  /**
+   * Logs in an existing user with credentials.
+   */
+  public static async login(credentials: {
+    email: string;
+    password: string;
+  }): Promise<{ token: string; user: any }> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+
+    if (!response.ok) {
+      let msg = 'Invalid credentials';
+      try {
+        const err = await response.json();
+        msg = err.detail || msg;
+      } catch {
+        // fallback
+      }
+      throw new Error(msg);
+    }
+
+    const resData = await response.json();
+    return {
+      token: resData.access_token,
+      user: {
+        id: resData.user.id,
+        email: resData.user.email,
+        fullName: resData.user.full_name,
+        farmName: resData.user.farm_name,
+        municipality: resData.user.municipality,
+        role: resData.user.role,
+        avatarUrl: resData.user.avatar_url,
+        createdAt: resData.user.created_at,
+      },
+    };
+  }
 }

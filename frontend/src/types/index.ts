@@ -55,3 +55,36 @@ export interface PlotSummaryInfo {
   dominantSeverity: SeverityLevel;
   cropsAnalyzed: CropType[];
 }
+
+export type FarmerRole =
+  | 'Smallholder Farmer'
+  | 'Agronomist / Extensionist'
+  | 'Cooperative Producer'
+  | 'Agricultural Researcher';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  fullName: string;
+  farmName: string;
+  municipality: string;
+  role: FarmerRole;
+  avatarUrl?: string;
+  createdAt: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: {
+    id: string;
+    email: string;
+    full_name: string;
+    farm_name: string;
+    municipality: string;
+    role: FarmerRole;
+    avatar_url?: string;
+    created_at: string;
+  };
+}
+
