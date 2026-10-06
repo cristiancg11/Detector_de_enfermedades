@@ -157,14 +157,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       />
 
       {/* Glassmorphic Modal Card */}
-      <div className="relative w-full max-w-lg bg-slate-950/95 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(16,185,129,0.15)] backdrop-blur-2xl z-10 transition-all overflow-hidden my-auto">
+      <div className="relative w-full max-w-lg bg-slate-950/95 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(16,185,129,0.18)] backdrop-blur-2xl z-10 transition-all overflow-hidden my-auto">
         {/* Decorative Top Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-gradient-to-r from-emerald-500/20 via-teal-400/20 to-emerald-500/10 blur-2xl pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-gradient-to-r from-emerald-500/20 via-teal-400/20 to-cyan-500/10 blur-2xl pointer-events-none" />
 
         {/* Modal Header */}
-        <div className="relative flex items-center justify-between pb-5 border-b border-white/10">
+        <div className="relative flex items-center justify-between pb-5 border-b border-slate-800/80">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 p-0.5 shadow-[0_0_20px_rgba(16,185,129,0.35)]">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-400 to-cyan-400 p-0.5 shadow-[0_0_20px_rgba(16,185,129,0.35)]">
               <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
                 <Leaf className="w-5 h-5 text-emerald-400" />
               </div>
@@ -182,14 +182,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            className="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Mode Toggle (Farmer Sign In vs Register New Farm) */}
-        <div className="relative mt-6 p-1 rounded-2xl bg-slate-900/90 border border-white/10 grid grid-cols-2 gap-1">
+        <div className="relative mt-6 p-1 rounded-2xl bg-slate-900 border border-slate-800 grid grid-cols-2 gap-1 shadow-inner">
           <button
             type="button"
             onClick={() => {
@@ -198,7 +198,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             }}
             className={`py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               mode === 'login'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.35)]'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -214,7 +214,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             }}
             className={`py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               mode === 'register'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.35)]'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -248,7 +248,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="e.g. Don Carlos Guancha"
-                    className="w-full bg-slate-900/80 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors shadow-inner"
                   />
                 </div>
               </div>
@@ -266,7 +266,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={farmName}
                     onChange={(e) => setFarmName(e.target.value)}
                     placeholder="e.g. Finca Bella Vista - Sector 1"
-                    className="w-full bg-slate-900/80 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors shadow-inner"
                   />
                 </div>
               </div>
@@ -282,7 +282,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <select
                       value={municipality}
                       onChange={(e) => setMunicipality(e.target.value)}
-                      className="w-full bg-slate-900/80 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-400 transition-colors appearance-none"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-400 transition-colors appearance-none shadow-inner"
                     >
                       {NARINO_MUNICIPALITIES.map((m) => (
                         <option key={m} value={m} className="bg-slate-900 text-white">
@@ -302,7 +302,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <select
                       value={role}
                       onChange={(e) => setRole(e.target.value as FarmerRole)}
-                      className="w-full bg-slate-900/80 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-400 transition-colors appearance-none"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-400 transition-colors appearance-none shadow-inner"
                     >
                       {ROLES.map((r) => (
                         <option key={r} value={r} className="bg-slate-900 text-white">
@@ -329,7 +329,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="farmer@agroscan.co"
-                className="w-full bg-slate-900/80 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors"
+                className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors shadow-inner"
               />
             </div>
           </div>
@@ -347,7 +347,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-900/80 border border-white/10 rounded-2xl pl-10 pr-11 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors"
+                className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-11 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors shadow-inner"
               />
               <button
                 type="button"
@@ -363,7 +363,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-2 py-3.5 px-6 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 shadow-[0_0_25px_rgba(16,185,129,0.35)] transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+            className="w-full mt-2 py-3.5 px-6 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-[0_0_25px_rgba(16,185,129,0.35)] transition-all active:scale-[0.99] flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -385,7 +385,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </form>
 
         {/* Demo Smallholder Fast-Track Picker */}
-        <div className="mt-6 pt-5 border-t border-white/10">
+        <div className="mt-6 pt-5 border-t border-slate-800/80">
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
             <span>Fast-Track Demo Identities (One-Click Testing):</span>
@@ -397,7 +397,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 key={dp.id}
                 type="button"
                 onClick={() => handleSelectDemo(dp.email)}
-                className="p-2.5 rounded-2xl bg-white/5 hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/30 text-left transition-all group flex flex-col justify-between"
+                className="p-2.5 rounded-2xl bg-slate-900 hover:bg-emerald-500/10 border border-slate-800 hover:border-emerald-500/40 text-left transition-all group flex flex-col justify-between shadow-sm"
               >
                 <div className="flex items-center gap-2 mb-1">
                   <img
@@ -415,6 +415,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </button>
             ))}
           </div>
+
+          {/* Dismiss button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full mt-4 py-2 text-center text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          >
+            Explore Dashboard Directly →
+          </button>
         </div>
       </div>
     </div>

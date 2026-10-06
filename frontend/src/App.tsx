@@ -1,9 +1,8 @@
 /**
  * AgroScan AI - Modern Bento Grid Dashboard Application.
  *
- * Ultra-modern dark theme with deep obsidian background (bg-slate-950),
- * vibrant emerald gradients, translucent borders (border-white/10),
- * and glassmorphic cards.
+ * Ultra-modern dark theme with deep midnight carbon background (#090d16),
+ * vibrant emerald gradients, crisp frosted glass borders, and telemetry badges.
  *
  * Integrates MongoDB Atlas cloud persistence, JWT farmer session management,
  * OffscreenCanvas Web Worker image compression, and Gemini 2.5 Flash vision.
@@ -23,7 +22,8 @@ import {
   BarChart3,
   ArrowUpRight,
   ShieldAlert,
-  Sprout
+  Sprout,
+  Sparkles
 } from 'lucide-react';
 import { CropType, UserProfile } from './types';
 import { CropDiagnosticRequest } from './models/CropDiagnosticRequest';
@@ -42,7 +42,8 @@ export const App: React.FC = () => {
   const [currentReport, setCurrentReport] = useState<DiagnosticReport | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
+  // Default to true so login is immediately visible every time frontend opens
+  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [historyCount, setHistoryCount] = useState<number>(0);
   const [criticalCount, setCriticalCount] = useState<number>(0);
@@ -84,11 +85,8 @@ export const App: React.FC = () => {
       setCurrentUser(activeUser);
       setPlotIdentifier(`${activeUser.farmName} - Lot 1`);
     } else {
-      // Out-of-the-box demo farmer
-      const demo = AuthSession.DEMO_PROFILES[0];
-      setCurrentUser(demo);
-      AuthSession.saveSession(`demo-init-${Date.now()}`, demo);
-      setPlotIdentifier(`${demo.farmName} - Lot 1`);
+      // Ensure login modal is displayed on first load
+      setIsAuthOpen(true);
     }
 
     // Check backend and MongoDB Atlas connectivity
@@ -116,6 +114,7 @@ export const App: React.FC = () => {
   const handleLogout = () => {
     AuthSession.clearSession();
     setCurrentUser(null);
+    setIsAuthOpen(true);
   };
 
   const handleAuthSuccess = (user: UserProfile) => {
@@ -211,21 +210,21 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950 relative overflow-x-hidden">
-      {/* Ambient Radial Background Glows */}
+    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950 relative overflow-x-hidden">
+      {/* Ambient Radial Mesh Background Glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-[128px]" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-teal-500/10 rounded-full blur-[128px]" />
-        <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-cyan-500/10 rounded-full blur-[128px]" />
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-emerald-500/12 rounded-full blur-[140px]" />
+        <div className="absolute top-1/3 -right-32 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px]" />
+        <div className="absolute -bottom-32 left-1/3 w-[500px] h-[500px] bg-indigo-500/08 rounded-full blur-[150px]" />
       </div>
 
       {/* Top Navbar Header */}
-      <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-2xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      <header className="sticky top-0 z-40 bg-slate-900/85 backdrop-blur-2xl border-b border-slate-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.6)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Brand Logo & Andean Subtitle */}
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-400 p-0.5 shadow-[0_0_25px_rgba(16,185,129,0.4)]">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-400 p-0.5 shadow-[0_0_25px_rgba(16,185,129,0.35)]">
+              <div className="w-full h-full bg-[#090d16] rounded-[14px] flex items-center justify-center">
                 <Leaf className="w-6 h-6 text-emerald-400" />
               </div>
             </div>
@@ -234,7 +233,7 @@ export const App: React.FC = () => {
                 <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                   AgroScan<span className="text-emerald-400">.AI</span>
                 </h1>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-black tracking-wider uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-black tracking-wider uppercase shadow-[0_0_10px_rgba(16,185,129,0.2)]">
                   Atlas v2.0
                 </span>
               </div>
@@ -248,7 +247,7 @@ export const App: React.FC = () => {
           {/* Right Header Controls */}
           <div className="flex items-center gap-3">
             {/* MongoDB Atlas & AI Engine Live Status Pill */}
-            <div className="hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-white/10 text-xs">
+            <div className="hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs shadow-inner">
               <span
                 className={`w-2 h-2 rounded-full ${
                   backendStatus.gemini_configured
@@ -259,7 +258,7 @@ export const App: React.FC = () => {
               <span className="text-slate-300 font-mono text-[11px]">
                 {backendStatus.model || 'Gemini 2.5 Flash'}
               </span>
-              <span className="text-slate-600">|</span>
+              <span className="text-slate-700">|</span>
               <span className="flex items-center gap-1 text-[11px] text-teal-400 font-mono">
                 <Database className="w-3 h-3" />
                 <span>MongoDB Atlas {backendStatus.mongodb_connected ? '(Live)' : '(Synced)'}</span>
@@ -268,7 +267,7 @@ export const App: React.FC = () => {
 
             {/* Farmer User Profile Badge or Sign In Trigger */}
             {currentUser ? (
-              <div className="flex items-center gap-2 p-1.5 pr-3 rounded-2xl bg-slate-900/80 border border-white/10 hover:border-emerald-500/30 transition-all">
+              <div className="flex items-center gap-2 p-1.5 pr-3 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/40 transition-all shadow-sm">
                 <img
                   src={currentUser.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=farmer'}
                   alt={currentUser.fullName}
@@ -295,7 +294,7 @@ export const App: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsAuthOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-xs transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs transition-all shadow-[0_0_20px_rgba(16,185,129,0.35)] active:scale-95"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Farmer Sign In</span>
@@ -306,7 +305,7 @@ export const App: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsDrawerOpen(true)}
-              className="relative inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-850 border border-white/10 text-slate-200 text-xs font-bold transition-all hover:border-emerald-500/30 active:scale-95 shadow-sm"
+              className="relative inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-800 text-slate-200 text-xs font-bold transition-all hover:border-emerald-500/40 active:scale-95 shadow-sm"
             >
               <History className="w-4 h-4 text-emerald-400" />
               <span className="hidden sm:inline">Farm Plots</span>
@@ -322,16 +321,16 @@ export const App: React.FC = () => {
 
       {/* Main Bento Grid Dashboard Content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8 z-10">
-        {/* Active Farmer Profile & Parcel Indicator Banner */}
-        {currentUser && (
-          <div className="p-4 sm:p-5 rounded-3xl bg-slate-900/60 border border-white/10 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_0_30px_rgba(16,185,129,0.06)]">
+        {/* Active Farmer Profile Banner OR Sign-In Prompt Banner */}
+        {currentUser ? (
+          <div className="p-4 sm:p-5 rounded-3xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
                 <Trees className="w-6 h-6" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold text-slate-400">Active Farm Session:</span>
+                  <span className="text-xs font-semibold text-slate-400">Active Parcel Session:</span>
                   <span className="text-sm font-black text-white">{currentUser.farmName}</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
                     {currentUser.municipality}
@@ -339,7 +338,7 @@ export const App: React.FC = () => {
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
                   Farmer: <strong className="text-slate-200">{currentUser.fullName}</strong> • Role:{' '}
-                  <span className="text-teal-400">{currentUser.role}</span>
+                  <span className="text-teal-400 font-semibold">{currentUser.role}</span>
                 </p>
               </div>
             </div>
@@ -353,12 +352,39 @@ export const App: React.FC = () => {
               <span>Switch Account</span>
             </button>
           </div>
+        ) : (
+          <div className="p-5 rounded-3xl bg-gradient-to-r from-emerald-950/40 via-slate-900/90 to-teal-950/40 border border-emerald-500/30 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_0_40px_rgba(16,185,129,0.12)]">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-300 shrink-0 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white flex items-center gap-2">
+                  <span>Farmer Authentication Gateway</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                    MongoDB Atlas Sync
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Sign in or register your farm parcel to save diagnoses, track plot history, and access cloud intelligence.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsAuthOpen(true)}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs transition-all shadow-[0_0_20px_rgba(16,185,129,0.35)] active:scale-95 shrink-0"
+            >
+              Log In / Register Farm
+            </button>
+          </div>
         )}
 
         {/* BENTO GRID: Quick Overview Metrics (Row 1) */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Bento Tile 1: Total Scans */}
-          <div className="p-5 rounded-3xl bg-slate-900/60 border border-white/10 backdrop-blur-xl flex flex-col justify-between hover:border-emerald-500/30 transition-all group">
+          <div className="p-5 rounded-3xl bg-slate-900/75 border border-slate-800/80 hover:border-emerald-500/40 backdrop-blur-xl flex flex-col justify-between transition-all group shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Total Crop Scans
@@ -380,7 +406,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* Bento Tile 2: Critical Plots Alert */}
-          <div className="p-5 rounded-3xl bg-slate-900/60 border border-white/10 backdrop-blur-xl flex flex-col justify-between hover:border-rose-500/30 transition-all group">
+          <div className="p-5 rounded-3xl bg-slate-900/75 border border-slate-800/80 hover:border-rose-500/40 backdrop-blur-xl flex flex-col justify-between transition-all group shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Critical Plots Alert
@@ -415,7 +441,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* Bento Tile 3: Monitored Plots Overview */}
-          <div className="p-5 rounded-3xl bg-slate-900/60 border border-white/10 backdrop-blur-xl flex flex-col justify-between hover:border-teal-500/30 transition-all group">
+          <div className="p-5 rounded-3xl bg-slate-900/75 border border-slate-800/80 hover:border-teal-500/40 backdrop-blur-xl flex flex-col justify-between transition-all group shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Monitored Lots
@@ -436,7 +462,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* Bento Tile 4: High-Tech Processing Engine */}
-          <div className="p-5 rounded-3xl bg-slate-900/60 border border-white/10 backdrop-blur-xl flex flex-col justify-between hover:border-cyan-500/30 transition-all group">
+          <div className="p-5 rounded-3xl bg-slate-900/75 border border-slate-800/80 hover:border-cyan-500/40 backdrop-blur-xl flex flex-col justify-between transition-all group shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Off-Thread Engine
@@ -478,7 +504,7 @@ export const App: React.FC = () => {
               </h2>
             </div>
             {currentReport && (
-              <span className="text-xs text-teal-400 font-mono font-bold bg-slate-900 px-3 py-1 rounded-xl border border-white/10">
+              <span className="text-xs text-teal-400 font-mono font-bold bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 shadow-sm">
                 Plot: {currentReport.plotIdentifier}
               </span>
             )}
@@ -487,7 +513,7 @@ export const App: React.FC = () => {
           {currentReport ? (
             <DiagnosticCard report={currentReport} />
           ) : (
-            <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-12 text-center flex flex-col items-center backdrop-blur-xl">
+            <div className="bg-slate-900/75 border border-slate-800/80 rounded-3xl p-12 text-center flex flex-col items-center backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
               <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
                 <Sprout className="w-8 h-8" />
               </div>
@@ -524,8 +550,8 @@ export const App: React.FC = () => {
         onAuthSuccess={handleAuthSuccess}
       />
 
-      {/* Ultra-Modern Footer */}
-      <footer className="mt-16 border-t border-white/10 bg-slate-950 py-8 text-xs text-slate-500 z-10">
+      {/* Modern Footer */}
+      <footer className="mt-16 border-t border-slate-800/80 bg-slate-950 py-8 text-xs text-slate-500 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Leaf className="w-4 h-4 text-emerald-400" />

@@ -57,7 +57,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
 
   return (
     <div
-      className={`relative rounded-3xl p-6 sm:p-8 shadow-2xl transition-all duration-300 overflow-hidden bg-slate-900/80 border border-white/10 backdrop-blur-2xl ${
+      className={`relative rounded-3xl p-6 sm:p-8 shadow-2xl transition-all duration-300 overflow-hidden bg-slate-900/90 border border-slate-800/80 backdrop-blur-2xl ${
         report.severityLevel === 'CRITICAL'
           ? 'shadow-[0_0_40px_rgba(239,68,68,0.12)]'
           : report.severityLevel === 'MODERATE'
@@ -77,7 +77,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
       />
 
       {/* Header Info Banner & Metrics */}
-      <div className="relative flex flex-col lg:flex-row lg:items-start justify-between gap-6 pb-6 border-b border-white/10">
+      <div className="relative flex flex-col lg:flex-row lg:items-start justify-between gap-6 pb-6 border-b border-slate-800/80">
         <div className="flex-1">
           {/* Metadata Badges */}
           <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -105,13 +105,13 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
             </span>
 
             {/* Crop Badge */}
-            <span className="px-3 py-1 rounded-full bg-slate-950/80 text-slate-300 border border-white/10 text-xs font-bold flex items-center gap-1.5">
+            <span className="px-3 py-1 rounded-full bg-slate-950/80 text-slate-300 border border-slate-800 text-xs font-bold flex items-center gap-1.5">
               <span>{report.getCropIcon()}</span>
               <span>{report.cropType}</span>
             </span>
 
             {/* Plot Identifier */}
-            <span className="px-3 py-1 rounded-full bg-slate-950/80 text-emerald-400 border border-white/10 text-xs font-mono font-medium flex items-center gap-1">
+            <span className="px-3 py-1 rounded-full bg-slate-950/80 text-emerald-400 border border-slate-800 text-xs font-mono font-medium flex items-center gap-1">
               <MapPin className="w-3 h-3 text-emerald-400" />
               <span>{report.plotIdentifier}</span>
             </span>
@@ -137,7 +137,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
         </div>
 
         {/* Animated High-Tech Confidence Gauge */}
-        <div className="flex sm:flex-col items-center justify-between sm:justify-center p-4 rounded-2xl bg-slate-950/80 border border-white/10 shrink-0 min-w-[160px]">
+        <div className="flex sm:flex-col items-center justify-between sm:justify-center p-4 rounded-2xl bg-slate-950/90 border border-slate-800 shrink-0 min-w-[160px] shadow-sm">
           <div className="relative w-20 h-20 flex items-center justify-center">
             {/* SVG Radial Gauge */}
             <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
@@ -184,7 +184,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
 
       {/* Phenotypic Symptoms Tags */}
       {report.symptoms.length > 0 && (
-        <div className="py-4 border-b border-white/10">
+        <div className="py-4 border-b border-slate-800/80">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-emerald-400" />
             <span>Observed Phenotypic Symptoms:</span>
@@ -193,7 +193,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
             {report.symptoms.map((symptom, idx) => (
               <span
                 key={idx}
-                className="px-3 py-1.5 rounded-xl bg-slate-950/70 border border-white/10 text-xs text-slate-200 flex items-center gap-1.5 font-medium"
+                className="px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-200 flex items-center gap-1.5 font-medium shadow-inner"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                 <span>{symptom}</span>
@@ -221,13 +221,13 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
           </div>
 
           {/* View Mode Toggle */}
-          <div className="p-1 rounded-xl bg-slate-950 border border-white/10 flex items-center gap-1 self-start sm:self-auto">
+          <div className="p-1 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-1 self-start sm:self-auto shadow-inner">
             <button
               type="button"
               onClick={() => setActiveTab('split')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === 'split'
-                  ? 'bg-emerald-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.35)]'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -238,7 +238,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
               onClick={() => setActiveTab('organic')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === 'organic'
-                  ? 'bg-emerald-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.35)]'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -249,7 +249,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
               onClick={() => setActiveTab('chemical')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === 'chemical'
-                  ? 'bg-teal-500 text-slate-950 shadow-[0_0_15px_rgba(20,184,166,0.3)]'
+                  ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-950 shadow-[0_0_15px_rgba(20,184,166,0.35)]'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -337,7 +337,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
 
         {/* Preventive Cultural Agronomy */}
         {report.preventiveMeasures.length > 0 && (
-          <div className="mt-4 p-4 rounded-2xl bg-slate-950/70 border border-white/10">
+          <div className="mt-4 p-4 rounded-2xl bg-slate-950/80 border border-slate-800 shadow-inner">
             <h5 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-2 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>Cultural Agronomic Preventive Measures:</span>
@@ -354,13 +354,13 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
         )}
 
         {/* Footer Actions & Metadata */}
-        <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div className="mt-6 pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3 text-slate-400 font-mono text-[11px]">
             <span className="flex items-center gap-1">
               <Calendar className="w-3 h-3 text-slate-500" />
               <span>{report.formattedDate()}</span>
             </span>
-            <span className="text-slate-600">|</span>
+            <span className="text-slate-700">|</span>
             <span className="text-slate-500 truncate max-w-[200px]">ID: {report.id}</span>
           </div>
 
@@ -368,7 +368,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
             <button
               type="button"
               onClick={handleExportJSON}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all text-xs font-semibold"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition-all text-xs font-semibold shadow-sm"
             >
               <Download className="w-3.5 h-3.5 text-teal-400" />
               <span>Export JSON</span>
@@ -377,7 +377,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
             <button
               type="button"
               onClick={handleCopySummary}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 transition-all text-xs font-semibold"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 transition-all text-xs font-semibold shadow-sm"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? 'Copied to Clipboard!' : 'Copy Summary'}</span>

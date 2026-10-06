@@ -271,7 +271,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 opacity-80" />
 
       {/* Section Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-6 border-b border-white/10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-800/80">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse" />
@@ -295,7 +295,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
               key={c.type}
               type="button"
               onClick={() => handleLoadSample(c.type)}
-              className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-500/30 text-slate-300 hover:text-emerald-300 text-xs font-semibold transition-all flex items-center gap-1 active:scale-95"
+              className="px-2.5 py-1.5 rounded-xl bg-slate-950/80 hover:bg-emerald-500/15 border border-slate-800 hover:border-emerald-500/40 text-slate-300 hover:text-emerald-300 text-xs font-semibold transition-all flex items-center gap-1 active:scale-95 shadow-sm"
             >
               <span>{c.icon}</span>
               <span>{c.label}</span>
@@ -319,8 +319,8 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                 onClick={() => onCropChange(c.type)}
                 className={`p-4 rounded-2xl border text-left transition-all duration-200 relative flex flex-col justify-between ${
                   isSelected
-                    ? `bg-slate-950/90 border-emerald-400/60 shadow-[0_0_25px_rgba(16,185,129,0.2)]`
-                    : 'bg-slate-950/40 border-white/10 hover:border-white/20 hover:bg-slate-950/60'
+                    ? `bg-slate-950/95 border-emerald-400/80 shadow-[0_0_25px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/50`
+                    : 'bg-slate-950/50 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -364,7 +364,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
               value={plotIdentifier}
               onChange={(e) => onPlotChange(e.target.value)}
               placeholder="e.g., Plot A - North Furrow, Lot 4, Greenhouse 2..."
-              className="w-full bg-slate-950/80 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors"
+              className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors shadow-inner"
             />
           </div>
           <div className="flex flex-wrap gap-1.5 items-center">
@@ -375,8 +375,8 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                 onClick={() => onPlotChange(preset)}
                 className={`text-xs px-3 py-2 rounded-xl border transition-all ${
                   plotIdentifier === preset
-                    ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 font-bold'
-                    : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200 hover:border-white/20'
+                    ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 font-bold shadow-sm'
+                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
                 }`}
               >
                 {preset}
@@ -402,8 +402,8 @@ export const CropScanner: React.FC<CropScannerProps> = ({
             dragActive
               ? 'border-emerald-400 bg-emerald-500/10 scale-[1.01]'
               : previewUrl
-              ? 'border-slate-700 bg-slate-950/70'
-              : 'border-white/10 bg-slate-950/50 hover:border-emerald-500/40 hover:bg-slate-900/40'
+              ? 'border-slate-700 bg-slate-950/80'
+              : 'border-slate-800 bg-slate-950/60 hover:border-emerald-500/40 hover:bg-slate-950/80'
           }`}
         >
           <input
@@ -416,7 +416,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
 
           {previewUrl ? (
             <div className="relative w-full flex flex-col items-center">
-              <div className="relative max-h-64 rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
+              <div className="relative max-h-64 rounded-2xl overflow-hidden border border-slate-700 shadow-2xl group">
                 <img
                   src={previewUrl}
                   alt="Crop preview"
@@ -531,8 +531,8 @@ export const CropScanner: React.FC<CropScannerProps> = ({
         onClick={handleStartAnalysis}
         className={`w-full py-4 px-6 rounded-2xl font-black text-xs sm:text-sm tracking-wider uppercase transition-all flex items-center justify-center gap-3 shadow-xl ${
           isAnalyzing || isOptimizing || !optimizedBlob
-            ? 'bg-slate-800/80 text-slate-500 cursor-not-allowed border border-white/5'
-            : 'bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 hover:from-emerald-400 hover:to-teal-300 text-slate-950 shadow-[0_0_30px_rgba(16,185,129,0.35)] hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] active:scale-[0.99]'
+            ? 'bg-slate-800/80 text-slate-500 cursor-not-allowed border border-slate-800'
+            : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-[0_0_30px_rgba(16,185,129,0.35)] hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] active:scale-[0.99]'
         }`}
       >
         {isAnalyzing ? (
