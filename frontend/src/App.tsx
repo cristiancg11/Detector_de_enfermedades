@@ -36,6 +36,7 @@ import { DiagnosticCard } from './components/DiagnosticCard';
 import { PlotHistoryDrawer } from './components/PlotHistoryDrawer';
 import { AuthModal } from './components/AuthModal';
 import { LoginPortal } from './components/LoginPortal';
+import { AgronomicChatModal } from './components/AgronomicChatModal';
 
 export const App: React.FC = () => {
   // Always display the login portal on application load as requested
@@ -46,6 +47,8 @@ export const App: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+  const [chatReport, setChatReport] = useState<DiagnosticReport | null>(null);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [historyCount, setHistoryCount] = useState<number>(0);
   const [criticalCount, setCriticalCount] = useState<number>(0);
@@ -125,6 +128,11 @@ export const App: React.FC = () => {
 
   const handleContinueAsGuest = () => {
     setViewMode('dashboard');
+  };
+
+  const handleOpenChat = (reportToChat: DiagnosticReport) => {
+    setChatReport(reportToChat);
+    setIsChatOpen(true);
   };
 
   // Main scan dispatcher
@@ -508,7 +516,7 @@ export const App: React.FC = () => {
           </div>
 
           {currentReport ? (
-            <DiagnosticCard report={currentReport} />
+            <DiagnosticCard report={currentReport} onOpenChat={handleOpenChat} />
           ) : (
             <div className="bg-white border border-slate-200/90 rounded-3xl p-12 text-center flex flex-col items-center shadow-card">
               <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-4 shadow-sm">
@@ -546,6 +554,16 @@ export const App: React.FC = () => {
         onClose={() => setIsAuthOpen(false)}
         onAuthSuccess={handleAuthSuccess}
       />
+
+      {/* Interactive Agronomic Follow-up Chat Assistant */}
+      {(chatReport || currentReport) && (
+        <AgronomicChatModal
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          report={chatReport || currentReport!}
+          currentUser={currentUser}
+        />
+      )}
 
       {/* Modern Footer */}
       <footer className="mt-16 border-t border-slate-200 bg-white py-8 text-xs text-slate-500 z-10">

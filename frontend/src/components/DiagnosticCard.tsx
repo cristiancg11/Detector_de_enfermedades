@@ -22,15 +22,17 @@ import {
   Activity,
   Layers,
   ArrowRight,
-  Download
+  Download,
+  MessageSquare
 } from 'lucide-react';
 import { DiagnosticReport } from '../models/DiagnosticReport';
 
 interface DiagnosticCardProps {
   report: DiagnosticReport;
+  onOpenChat?: (report: DiagnosticReport) => void;
 }
 
-export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
+export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report, onOpenChat }) => {
   const [activeTab, setActiveTab] = useState<'split' | 'organic' | 'chemical'>('split');
   const [copied, setCopied] = useState<boolean>(false);
 
@@ -356,7 +358,18 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report }) => {
             <span className="text-slate-400 truncate max-w-[200px]">ID: {report.id}</span>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto">
+          <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+            {onOpenChat && (
+              <button
+                type="button"
+                onClick={() => onOpenChat(report)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all text-xs font-bold shadow-emerald-soft active:scale-95"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Ask Agronomist Follow-up Questions</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={handleExportJSON}

@@ -7,7 +7,13 @@
 import { AuthSession } from '../models/AuthSession';
 import { CropDiagnosticRequest } from '../models/CropDiagnosticRequest';
 import { DiagnosticReport } from '../models/DiagnosticReport';
-import { RawDiagnosticResponse, UserProfile } from '../types';
+import {
+  ChatMessage,
+  ChatFollowUpRequest,
+  ChatFollowUpResponse,
+  RawDiagnosticResponse,
+  UserProfile
+} from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -240,4 +246,41 @@ export class ApiService {
       createdAt: user.created_at,
     };
   }
+
+  /**
+   * Submits a contextual agronomic follow-up inquiry to Gemini 2.5 Flash.
+   */
+  public static async sendAgronomicChat(
+    diagnosticId: string,
+    message: string,
+    chatHistory: ChatMessage[] = []
+  ): Promise<ChatFollowUpResponse> {
+    const headers = this.getAuthHeaders(true);
+
+    const payload: ChatFollowUpRequest = {
+      diagnostic_id: diagnosticId,
+      message,
+      chat_history: chatHistory,
+    };
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/diagnose/${diagnosticId}/chat`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      let errorMsg = `Server error (${response.status})`;
+      try {
+        const errData = await response.json();
+        errorMsg = errData.detail || errorMsg;
+      } catch {
+        // fallback
+      }
+      throw new Error(errorMsg);
+    }
+
+    return response.json();
+  }
 }
+

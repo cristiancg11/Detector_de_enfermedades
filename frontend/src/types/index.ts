@@ -88,3 +88,22 @@ export interface AuthResponse {
   };
 }
 
+export interface ChatMessage {
+  role: 'user' | 'model';
+  content: string;
+  timestamp: string;
+}
+
+export interface ChatFollowUpRequest {
+  diagnostic_id: string;
+  message: string;
+  chat_history?: ChatMessage[];
+}
+
+export interface ChatFollowUpResponse {
+  reply: string;
+  suggested_followups: string[];
+  timestamp: string;
+}
+
+
