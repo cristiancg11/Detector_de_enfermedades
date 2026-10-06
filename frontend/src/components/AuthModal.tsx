@@ -1,5 +1,5 @@
 /**
- * AgroScan AI - Modern Glassmorphic Authentication & Farmer Onboarding Dialog.
+ * AgroScan AI - Modern Authentication & Farmer Onboarding Dialog.
  *
  * Provides farmer account creation ("Register New Farm"), sign-in ("Farmer Sign In"),
  * and one-click demo profiles tailored to Andean smallholders and agronomists.
@@ -11,15 +11,13 @@ import {
   Lock,
   Mail,
   User,
-  MapPin,
   Sparkles,
   AlertCircle,
   Eye,
   EyeOff,
   Trees,
-  Briefcase,
-  ShieldCheck,
-  Leaf
+  Leaf,
+  ArrowRight
 } from 'lucide-react';
 import { FarmerRole, UserProfile } from '../types';
 import { AuthSession } from '../models/AuthSession';
@@ -110,7 +108,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             email,
             password,
             fullName,
-            farmName: farmName || 'Finca La Esperanza',
+            farmName: farmName || 'Finca La Cumbre',
             municipality,
             role,
           });
@@ -123,7 +121,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             id: `usr-${Date.now()}`,
             email: email.trim().toLowerCase(),
             fullName: fullName.trim(),
-            farmName: farmName.trim() || 'Finca La Esperanza',
+            farmName: farmName.trim() || 'Finca Bella Vista',
             municipality,
             role,
             avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${email.trim().toLowerCase()}`,
@@ -152,28 +150,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Translucent Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/85 backdrop-blur-xl transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
       />
 
-      {/* Glassmorphic Modal Card */}
-      <div className="relative w-full max-w-lg bg-slate-950/95 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(16,185,129,0.18)] backdrop-blur-2xl z-10 transition-all overflow-hidden my-auto">
-        {/* Decorative Top Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-gradient-to-r from-emerald-500/20 via-teal-400/20 to-cyan-500/10 blur-2xl pointer-events-none" />
-
+      {/* Modal Card */}
+      <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 transition-all overflow-hidden my-auto">
         {/* Modal Header */}
-        <div className="relative flex items-center justify-between pb-5 border-b border-slate-800/80">
+        <div className="relative flex items-center justify-between pb-5 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-400 to-cyan-400 p-0.5 shadow-[0_0_20px_rgba(16,185,129,0.35)]">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-                <Leaf className="w-5 h-5 text-emerald-400" />
-              </div>
+            <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-emerald-soft">
+              <Leaf className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-                AgroScan<span className="text-emerald-400">.AI</span>
+              <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                AgroScan<span className="text-emerald-600">.AI</span>
               </h3>
-              <p className="text-xs text-slate-400 font-medium">
+              <p className="text-xs text-slate-500 font-medium">
                 Andean Farmer Authentication & Cloud Persistence
               </p>
             </div>
@@ -182,24 +175,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            className="w-9 h-9 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Mode Toggle (Farmer Sign In vs Register New Farm) */}
-        <div className="relative mt-6 p-1 rounded-2xl bg-slate-900 border border-slate-800 grid grid-cols-2 gap-1 shadow-inner">
+        {/* Mode Toggle */}
+        <div className="relative mt-6 p-1 rounded-2xl bg-slate-100 grid grid-cols-2 gap-1">
           <button
             type="button"
             onClick={() => {
               setMode('login');
               setErrorMsg(null);
             }}
-            className={`py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+            className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               mode === 'login'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.35)]'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Lock className="w-3.5 h-3.5" />
@@ -212,10 +205,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               setMode('register');
               setErrorMsg(null);
             }}
-            className={`py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+            className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               mode === 'register'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.35)]'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Trees className="w-3.5 h-3.5" />
@@ -223,208 +216,174 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </button>
         </div>
 
-        {/* Error Notification */}
+        {/* Quick Demo Access */}
+        <div className="mt-5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-500" />
+              <span>Fast 1-Click Demo Profiles</span>
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => handleSelectDemo('carlos@agroscan.co')}
+              className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-left transition-all text-xs shadow-sm"
+            >
+              <p className="font-bold text-slate-900 truncate">Don Carlos Guancha</p>
+              <p className="text-[10px] text-slate-500 truncate">Farmer (Túquerres)</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectDemo('elena@agrosavia.co')}
+              className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-left transition-all text-xs shadow-sm"
+            >
+              <p className="font-bold text-slate-900 truncate">Dra. Elena Bastidas</p>
+              <p className="text-[10px] text-slate-500 truncate">Agronomist (Pasto)</p>
+            </button>
+          </div>
+        </div>
+
+        {/* Error Alert */}
         {errorMsg && (
-          <div className="mt-4 p-3.5 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2.5 animate-in fade-in">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-            <span className="font-medium">{errorMsg}</span>
+          <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{errorMsg}</span>
           </div>
         )}
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        {/* Auth Form */}
+        <form onSubmit={handleSubmit} className="mt-5 space-y-3.5">
           {mode === 'register' && (
             <>
-              {/* Full Name */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                  Full Name
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Full Name / Legal Representative *
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Don Carlos Guancha"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors shadow-inner"
+                    placeholder="e.g. Mateo Narváez"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600"
                   />
                 </div>
               </div>
 
-              {/* Farm Name */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                  Farm / Parcel Name
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Farm or Estate Name *
                 </label>
                 <div className="relative">
-                  <Trees className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Trees className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
                     value={farmName}
                     onChange={(e) => setFarmName(e.target.value)}
-                    placeholder="e.g. Finca Bella Vista - Sector 1"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors shadow-inner"
+                    placeholder="e.g. Finca San Francisco"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600"
                   />
                 </div>
               </div>
 
-              {/* Municipality & Role Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                    Nariño Municipality
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Municipality (Nariño)
                   </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                    <select
-                      value={municipality}
-                      onChange={(e) => setMunicipality(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-400 transition-colors appearance-none shadow-inner"
-                    >
-                      {NARINO_MUNICIPALITIES.map((m) => (
-                        <option key={m} value={m} className="bg-slate-900 text-white">
-                          {m}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <select
+                    value={municipality}
+                    onChange={(e) => setMunicipality(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-600"
+                  >
+                    {NARINO_MUNICIPALITIES.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-                    Role in Field
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Role
                   </label>
-                  <div className="relative">
-                    <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                    <select
-                      value={role}
-                      onChange={(e) => setRole(e.target.value as FarmerRole)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-400 transition-colors appearance-none shadow-inner"
-                    >
-                      {ROLES.map((r) => (
-                        <option key={r} value={r} className="bg-slate-900 text-white">
-                          {r}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value as FarmerRole)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-600"
+                  >
+                    {ROLES.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </>
           )}
 
-          {/* Email Address */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-              Email Address
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Account Email *
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="farmer@agroscan.co"
-                className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors shadow-inner"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600"
               />
             </div>
           </div>
 
-          {/* Password */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
-              Password {mode === 'register' && <span className="text-slate-500">(Min. 6 chars)</span>}
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Password *
             </label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-11 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors shadow-inner"
+                placeholder="••••••••••••"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-9 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
-          {/* Submit Action Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-2 py-3.5 px-6 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-[0_0_25px_rgba(16,185,129,0.35)] transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+            className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-emerald-soft flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
           >
             {isLoading ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                <span>Processing...</span>
-              </span>
-            ) : mode === 'login' ? (
-              <>
-                <ShieldCheck className="w-4 h-4" />
-                <span>Sign In to AgroScan Account</span>
-              </>
+              <span>Authenticating...</span>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
-                <span>Create Farm Account & Access Cloud</span>
+                <span>{mode === 'login' ? 'Sign In' : 'Create Farm Account'}</span>
+                <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
         </form>
-
-        {/* Demo Smallholder Fast-Track Picker */}
-        <div className="mt-6 pt-5 border-t border-slate-800/80">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Fast-Track Demo Identities (One-Click Testing):</span>
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {AuthSession.DEMO_PROFILES.map((dp) => (
-              <button
-                key={dp.id}
-                type="button"
-                onClick={() => handleSelectDemo(dp.email)}
-                className="p-2.5 rounded-2xl bg-slate-900 hover:bg-emerald-500/10 border border-slate-800 hover:border-emerald-500/40 text-left transition-all group flex flex-col justify-between shadow-sm"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <img
-                    src={dp.avatarUrl}
-                    alt={dp.fullName}
-                    className="w-6 h-6 rounded-lg object-cover bg-slate-800"
-                  />
-                  <span className="text-[11px] font-bold text-white group-hover:text-emerald-400 transition-colors truncate">
-                    {dp.fullName.split(' ')[0]}
-                  </span>
-                </div>
-                <span className="text-[10px] text-slate-400 truncate">
-                  {dp.farmName}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Dismiss button */}
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full mt-4 py-2 text-center text-xs font-semibold text-slate-400 hover:text-white transition-colors"
-          >
-            Explore Dashboard Directly →
-          </button>
-        </div>
       </div>
     </div>
   );

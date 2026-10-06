@@ -39,7 +39,6 @@ const CROP_OPTIONS: Array<{
   variety: string;
   region: string;
   altitude: string;
-  activeAccent: string;
 }> = [
   {
     type: 'Potato',
@@ -48,7 +47,6 @@ const CROP_OPTIONS: Array<{
     variety: 'Pastusa Suprema / Diacol Capiro',
     region: 'Túquerres & Pasto Plateau',
     altitude: '2,900m – 3,200m',
-    activeAccent: 'border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.25)]',
   },
   {
     type: 'Coffee',
@@ -57,7 +55,6 @@ const CROP_OPTIONS: Array<{
     variety: 'Castillo Nariño / Caturra Special',
     region: 'Sandoná & La Unión Canyons',
     altitude: '1,650m – 2,100m',
-    activeAccent: 'border-teal-400/60 shadow-[0_0_20px_rgba(45,212,191,0.25)]',
   },
   {
     type: 'Corn',
@@ -66,7 +63,6 @@ const CROP_OPTIONS: Array<{
     variety: 'Regional Amarillo / Choclo',
     region: 'Guáitara Canyon Basin',
     altitude: '1,800m – 2,500m',
-    activeAccent: 'border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.25)]',
   },
   {
     type: 'Tomato',
@@ -75,7 +71,6 @@ const CROP_OPTIONS: Array<{
     variety: 'Chonto & Santa Cruz Highland',
     region: 'Buesaco & Chachagüí Valleys',
     altitude: '1,500m – 1,950m',
-    activeAccent: 'border-rose-400/60 shadow-[0_0_20px_rgba(251,113,133,0.25)]',
   },
 ];
 
@@ -198,14 +193,14 @@ export const CropScanner: React.FC<CropScannerProps> = ({
 
     // Foliage background gradient
     const bgGrad = ctx.createLinearGradient(0, 0, 1200, 900);
-    bgGrad.addColorStop(0, '#042f2e');
-    bgGrad.addColorStop(0.5, '#064e3b');
+    bgGrad.addColorStop(0, '#064e3b');
+    bgGrad.addColorStop(0.5, '#047857');
     bgGrad.addColorStop(1, '#022c22');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 1200, 900);
 
     // Leaf vein structure
-    ctx.strokeStyle = '#10b981';
+    ctx.strokeStyle = '#34d399';
     ctx.lineWidth = 14;
     ctx.beginPath();
     ctx.moveTo(600, 850);
@@ -226,16 +221,16 @@ export const CropScanner: React.FC<CropScannerProps> = ({
     // Pathological necrotic fungal spot simulation
     const lesionGrad = ctx.createRadialGradient(480, 380, 20, 480, 380, 160);
     lesionGrad.addColorStop(0, '#1c1917');
-    lesionGrad.addColorStop(0.4, '#451a03');
-    lesionGrad.addColorStop(0.7, '#78350f');
-    lesionGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+    lesionGrad.addColorStop(0.4, '#78350f');
+    lesionGrad.addColorStop(0.7, '#b45309');
+    lesionGrad.addColorStop(1, 'rgba(52, 211, 153, 0)');
     ctx.fillStyle = lesionGrad;
     ctx.beginPath();
     ctx.arc(480, 380, 160, 0, Math.PI * 2);
     ctx.fill();
 
     // Concentric rings of Late Blight / Rust
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.arc(480, 380, 90, 0, Math.PI * 2);
@@ -266,28 +261,28 @@ export const CropScanner: React.FC<CropScannerProps> = ({
   };
 
   return (
-    <div className="relative rounded-3xl p-6 sm:p-8 bg-slate-900/80 border border-white/10 backdrop-blur-2xl shadow-2xl overflow-hidden">
-      {/* Decorative Gradient Shimmer */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 opacity-80" />
+    <div className="relative rounded-3xl p-6 sm:p-8 bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all overflow-hidden">
+      {/* Decorative Gradient Bar */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-500" />
 
       {/* Section Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-800/80">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-100">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse" />
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              High-Tech Crop Scanning Zone
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              Crop Health Scanning Station
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-400">
-            Off-main-thread image processing & Gemini 2.5 Flash Phytopathological Vision
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            Off-main-thread image processing & Google Gemini 2.5 Flash Vision Diagnostics
           </p>
         </div>
 
         {/* Rapid Sample Presets */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
             <span>Fast Test:</span>
           </span>
           {CROP_OPTIONS.map((c) => (
@@ -295,7 +290,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
               key={c.type}
               type="button"
               onClick={() => handleLoadSample(c.type)}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-950/80 hover:bg-emerald-500/15 border border-slate-800 hover:border-emerald-500/40 text-slate-300 hover:text-emerald-300 text-xs font-semibold transition-all flex items-center gap-1 active:scale-95 shadow-sm"
+              className="px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shadow-sm"
             >
               <span>{c.icon}</span>
               <span>{c.label}</span>
@@ -306,7 +301,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
 
       {/* Crop Selector Grid */}
       <div className="mb-8">
-        <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
+        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
           1. Select Target Andean Crop
         </label>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -319,25 +314,25 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                 onClick={() => onCropChange(c.type)}
                 className={`p-4 rounded-2xl border text-left transition-all duration-200 relative flex flex-col justify-between ${
                   isSelected
-                    ? `bg-slate-950/95 border-emerald-400/80 shadow-[0_0_25px_rgba(16,185,129,0.25)] ring-1 ring-emerald-400/50`
-                    : 'bg-slate-950/50 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60'
+                    ? `bg-emerald-50/70 border-emerald-500 ring-2 ring-emerald-500/20 shadow-sm`
+                    : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 shadow-sm'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-2xl sm:text-3xl">{c.icon}</span>
                   {isSelected && (
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
                   )}
                 </div>
                 <div>
-                  <h4 className="text-sm sm:text-base font-extrabold text-white tracking-wide">
+                  <h4 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
                     {c.label}
                   </h4>
-                  <p className="text-xs text-emerald-400 font-medium truncate mt-0.5">
+                  <p className="text-xs text-emerald-700 font-bold truncate mt-0.5">
                     {c.variety}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-1 truncate flex items-center gap-1">
-                    <Activity className="w-2.5 h-2.5 text-slate-500" />
+                  <p className="text-[10px] text-slate-500 mt-1 truncate flex items-center gap-1 font-medium">
+                    <Activity className="w-2.5 h-2.5 text-slate-400" />
                     <span>{c.region}</span>
                   </p>
                 </div>
@@ -350,21 +345,21 @@ export const CropScanner: React.FC<CropScannerProps> = ({
       {/* Plot / Lot Identifier Designation */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <label htmlFor="plot-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+          <label htmlFor="plot-input" className="text-xs font-bold text-slate-700 uppercase tracking-wider">
             2. Designate Farm Plot / Lot Identifier
           </label>
-          <span className="text-[11px] text-slate-400 font-mono">Persisted in MongoDB Atlas</span>
+          <span className="text-[11px] text-slate-500 font-medium">Persisted in MongoDB Atlas</span>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
-            <MapPin className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               id="plot-input"
               type="text"
               value={plotIdentifier}
               onChange={(e) => onPlotChange(e.target.value)}
               placeholder="e.g., Plot A - North Furrow, Lot 4, Greenhouse 2..."
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors shadow-inner"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition-colors shadow-sm"
             />
           </div>
           <div className="flex flex-wrap gap-1.5 items-center">
@@ -375,8 +370,8 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                 onClick={() => onPlotChange(preset)}
                 className={`text-xs px-3 py-2 rounded-xl border transition-all ${
                   plotIdentifier === preset
-                    ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 font-bold shadow-sm'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
                 {preset}
@@ -388,7 +383,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
 
       {/* Image Upload / Capture Area */}
       <div className="mb-6">
-        <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
           3. Upload or Capture Plant Photo
         </label>
 
@@ -400,10 +395,10 @@ export const CropScanner: React.FC<CropScannerProps> = ({
           onClick={() => fileInputRef.current?.click()}
           className={`relative border-2 border-dashed rounded-3xl p-6 sm:p-8 cursor-pointer transition-all text-center flex flex-col items-center justify-center min-h-[220px] overflow-hidden ${
             dragActive
-              ? 'border-emerald-400 bg-emerald-500/10 scale-[1.01]'
+              ? 'border-emerald-500 bg-emerald-50/50 scale-[1.01]'
               : previewUrl
-              ? 'border-slate-700 bg-slate-950/80'
-              : 'border-slate-800 bg-slate-950/60 hover:border-emerald-500/40 hover:bg-slate-950/80'
+              ? 'border-slate-200 bg-slate-50/40'
+              : 'border-slate-300 bg-slate-50/70 hover:border-emerald-400 hover:bg-emerald-50/20'
           }`}
         >
           <input
@@ -416,7 +411,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
 
           {previewUrl ? (
             <div className="relative w-full flex flex-col items-center">
-              <div className="relative max-h-64 rounded-2xl overflow-hidden border border-slate-700 shadow-2xl group">
+              <div className="relative max-h-64 rounded-2xl overflow-hidden border border-slate-200 shadow-md group">
                 <img
                   src={previewUrl}
                   alt="Crop preview"
@@ -425,11 +420,11 @@ export const CropScanner: React.FC<CropScannerProps> = ({
 
                 {/* Animated Scanning Laser Overlay */}
                 {isAnalyzing && (
-                  <div className="absolute inset-0 bg-emerald-500/15 pointer-events-none flex flex-col justify-between">
-                    <div className="w-full h-1.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent animate-scan shadow-[0_0_15px_#34d399]" />
-                    <div className="absolute inset-0 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs">
-                      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 border border-emerald-400 text-emerald-400 text-xs font-black shadow-[0_0_20px_rgba(16,185,129,0.4)] animate-pulse">
-                        <RefreshCw className="w-4 h-4 animate-spin" />
+                  <div className="absolute inset-0 bg-emerald-500/10 pointer-events-none flex flex-col justify-between">
+                    <div className="w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent animate-scan" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-xs">
+                      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-emerald-500 text-emerald-800 text-xs font-bold shadow-lg animate-pulse">
+                        <RefreshCw className="w-4 h-4 animate-spin text-emerald-600" />
                         <span>Gemini 2.5 Flash Vision Diagnostic Running...</span>
                       </div>
                     </div>
@@ -444,25 +439,25 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                     e.stopPropagation();
                     fileInputRef.current?.click();
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-300 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 transition-colors shadow-sm"
                 >
-                  <Camera className="w-3.5 h-3.5 text-emerald-400" /> Replace Photo
+                  <Camera className="w-3.5 h-3.5 text-emerald-600" /> Replace Photo
                 </button>
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center max-w-sm">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform shadow-sm">
                 <Upload className="w-7 h-7" />
               </div>
-              <p className="text-white font-bold text-base mb-1">
+              <p className="text-slate-900 font-extrabold text-base mb-1">
                 Drag and drop crop photo or click to browse
               </p>
-              <p className="text-slate-400 text-xs mb-4">
+              <p className="text-slate-500 text-xs mb-4 font-medium">
                 Supports High-Res Mobile Photos (JPEG, PNG, WebP)
               </p>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-xs font-medium">
-                <Camera className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold shadow-sm">
+                <Camera className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Camera or Device Gallery</span>
               </div>
             </div>
@@ -472,15 +467,15 @@ export const CropScanner: React.FC<CropScannerProps> = ({
 
       {/* Real-Time Web Worker OffscreenCanvas Indicator */}
       {isOptimizing && (
-        <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 animate-pulse">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3 animate-pulse">
+          <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
             <Cpu className="w-5 h-5 animate-spin" />
           </div>
           <div>
-            <p className="text-xs font-black text-emerald-400">
+            <p className="text-xs font-bold text-emerald-900">
               Downscaling photo on Web Worker thread...
             </p>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-emerald-700">
               OffscreenCanvas optimization active. Zero UI blocking or frame drops.
             </p>
           </div>
@@ -489,27 +484,27 @@ export const CropScanner: React.FC<CropScannerProps> = ({
 
       {/* Real-Time Worker Performance Metrics Pill */}
       {workerMetrics && !isOptimizing && (
-        <div className="mb-6 p-4 rounded-2xl bg-slate-950/80 border border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-emerald-400 font-bold">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
+        <div className="mb-6 p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-emerald-800 font-bold">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
             <span>Worker Compression Complete</span>
           </div>
-          <div className="flex items-center gap-3 text-slate-400 font-mono text-[11px] flex-wrap">
+          <div className="flex items-center gap-3 text-slate-600 font-mono text-[11px] flex-wrap">
             <span className="flex items-center gap-1">
-              <Gauge className="w-3 h-3 text-slate-500" />
+              <Gauge className="w-3 h-3 text-slate-400" />
               <span>{workerMetrics.optimizedWidth}x{workerMetrics.optimizedHeight}px</span>
             </span>
-            <span className="text-slate-700">|</span>
+            <span className="text-slate-300">|</span>
             <span>
               Size: {Math.round((workerMetrics.originalSizeBytes || 0) / 1024)} KB →{' '}
-              <strong className="text-emerald-400 font-bold">
+              <strong className="text-emerald-700 font-bold">
                 {Math.round((workerMetrics.optimizedSizeBytes || 0) / 1024)} KB
               </strong>{' '}
               (-{workerMetrics.compressionRatioPercent}%)
             </span>
-            <span className="text-slate-700">|</span>
-            <span className="text-teal-400 font-bold flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+            <span className="text-slate-300">|</span>
+            <span className="text-sky-700 font-bold flex items-center gap-1">
+              <Clock className="w-3 h-3 text-sky-600" />
               <span>Speed: {workerMetrics.durationMs}ms</span>
             </span>
           </div>
@@ -518,8 +513,8 @@ export const CropScanner: React.FC<CropScannerProps> = ({
 
       {/* Error banner */}
       {errorMsg && (
-        <div className="mb-6 p-3.5 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+        <div className="mb-6 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
           <span>{errorMsg}</span>
         </div>
       )}
@@ -529,25 +524,25 @@ export const CropScanner: React.FC<CropScannerProps> = ({
         type="button"
         disabled={isAnalyzing || isOptimizing || !optimizedBlob}
         onClick={handleStartAnalysis}
-        className={`w-full py-4 px-6 rounded-2xl font-black text-xs sm:text-sm tracking-wider uppercase transition-all flex items-center justify-center gap-3 shadow-xl ${
+        className={`w-full py-4 px-6 rounded-2xl font-black text-xs sm:text-sm tracking-wider uppercase transition-all flex items-center justify-center gap-3 shadow-md ${
           isAnalyzing || isOptimizing || !optimizedBlob
-            ? 'bg-slate-800/80 text-slate-500 cursor-not-allowed border border-slate-800'
-            : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-[0_0_30px_rgba(16,185,129,0.35)] hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] active:scale-[0.99]'
+            ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+            : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-soft active:scale-[0.99]'
         }`}
       >
         {isAnalyzing ? (
           <>
-            <RefreshCw className="w-5 h-5 animate-spin text-slate-950" />
+            <RefreshCw className="w-5 h-5 animate-spin text-white" />
             <span>Analyzing Foliage Symptoms with Gemini 2.5 Flash...</span>
           </>
         ) : isOptimizing ? (
           <>
-            <Cpu className="w-5 h-5 animate-spin text-slate-950" />
+            <Cpu className="w-5 h-5 animate-spin text-white" />
             <span>Downscaling on Worker Thread...</span>
           </>
         ) : (
           <>
-            <Layers className="w-5 h-5 text-slate-950" />
+            <Layers className="w-5 h-5 text-white" />
             <span>Run Plant Health Diagnostic with Gemini 2.5 Flash</span>
           </>
         )}

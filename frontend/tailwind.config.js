@@ -4,25 +4,29 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        midnight: {
-          950: '#090d16', // Deep luxury twilight carbon
-          900: '#0f172a', // Midnight slate surface
-          850: '#141e33', // Elevated card surface
-          800: '#1e293b', // Translucent card border
-          700: '#334155', // Subtle divider
+        agro: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
+          950: '#052e16',
         },
         brand: {
-          emerald: '#10b981', // Clean vivid emerald
-          mint: '#34d399',    // Soft glowing mint
-          teal: '#14b8a6',    // Andean teal
-          cyan: '#06b6d4',    // Data cyan
-          amber: '#f59e0b',   // Andean solar amber
-          rose: '#f43f5e',    // Alert crimson
-          indigo: '#6366f1',  // Tech accent
+          emerald: '#059669', // Rich Forest Emerald
+          mint: '#10b981',    // Vibrant Andean Mint
+          teal: '#0d9488',    // Deep Teal
+          cyan: '#0284c7',    // Precision Sky
+          amber: '#d97706',   // Warm Alert Amber
+          rose: '#e11d48',    // Critical Alert Rose
         }
       },
       fontFamily: {
@@ -30,10 +34,10 @@ export default {
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       boxShadow: {
-        'brand-emerald': '0 0 30px rgba(16, 185, 129, 0.25)',
-        'brand-cyan': '0 0 30px rgba(6, 182, 212, 0.25)',
-        'brand-amber': '0 0 30px rgba(245, 158, 11, 0.25)',
-        'glass-card': '0 8px 32px 0 rgba(0, 0, 0, 0.45)',
+        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
+        'card-hover': '0 12px 28px -4px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04)',
+        'emerald-soft': '0 8px 24px -4px rgba(5, 150, 105, 0.20)',
+        'amber-soft': '0 8px 24px -4px rgba(217, 119, 6, 0.20)',
       },
       animation: {
         'scan': 'scan 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite',
