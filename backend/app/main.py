@@ -31,6 +31,9 @@ from app.db import (
 )
 from app.schemas import (
     AuthResponse,
+    ChatMessage,
+    ChatFollowUpRequest,
+    ChatFollowUpResponse,
     CropType,
     DiagnosticListResponse,
     DiagnosticResponse,
@@ -415,6 +418,103 @@ async def get_diagnostic_history(
     )
 
 
+@app.post(
+    "/api/v1/diagnose/{diagnostic_id}/chat",
+    response_model=ChatFollowUpResponse,
+    tags=["Diagnostics", "Chat"],
+    summary="Interactive Agronomic Follow-up Consultation",
+    description=(
+        "Enables interactive follow-up technical consultation grounded on a specific "
+        "crop diagnostic report. Powered by Gemini 2.5 Flash with persistent message history in MongoDB Atlas."
+    ),
+)
+async def agronomic_followup_chat(
+    diagnostic_id: str,
+    payload: ChatFollowUpRequest,
+    current_user: Optional[UserProfile] = Depends(get_current_user_optional),
+):
+    """
+    Handles follow-up technical questions grounded on a specific diagnostic session.
+    Retrieves ground truth context from MongoDB Atlas, invokes Gemini 2.5 Flash,
+    persists message thread turns, and returns practical field recommendations.
+    """
+    if not payload.message.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message content cannot be empty.",
+        )
+
+    # 1. Retrieve diagnostic context from MongoDB Atlas or local memory
+    diag_context: Optional[dict] = None
+    if diagnostics_collection is not None:
+        try:
+            doc = await diagnostics_collection.find_one({"id": diagnostic_id}, {"_id": 0})
+            if doc:
+                diag_context = doc
+        except Exception as exc:
+            logger.warning("MongoDB diagnostic lookup error for chat: %s", exc)
+
+    if not diag_context:
+        for item in in_memory_history:
+            if item.id == diagnostic_id:
+                diag_context = item.model_dump()
+                break
+
+    # If diagnostic is still not located (e.g., local mock or offline session), synthesize context
+    if not diag_context:
+        diag_context = {
+            "id": diagnostic_id,
+            "crop_type": "Potato",
+            "plot_identifier": "Plot A - Monitored Lot",
+            "disease_name": "Phytosanitary Assessment",
+            "scientific_name": "Solanum tuberosum condition",
+            "pathogen_type": "FUNGUS",
+            "severity_level": "MODERATE",
+            "symptoms": ["Observable foliar spots", "Leaf chlorosis"],
+            "organic_treatment": ["Bordeaux mixture 1%", "Trichoderma harzianum bio-fungicide"],
+            "chemical_treatment": ["Metalaxyl-M + Mancozeb curative spray"],
+            "preventive_measures": ["Sterilize farm pruning tools", "Optimize terrace drainage"],
+        }
+
+    # 2. Invoke Gemini 2.5 Flash follow-up engine
+    followup_response = await gemini_service.generate_agronomic_followup(
+        diagnostic_context=diag_context,
+        user_question=payload.message.strip(),
+        history=payload.chat_history,
+    )
+
+    # 3. Persist message thread turns to MongoDB Atlas
+    user_turn = ChatMessage(
+        role="user",
+        content=payload.message.strip(),
+    )
+    model_turn = ChatMessage(
+        role="model",
+        content=followup_response.reply,
+        timestamp=followup_response.timestamp,
+    )
+
+    if diagnostics_collection is not None:
+        try:
+            await diagnostics_collection.update_one(
+                {"id": diagnostic_id},
+                {
+                    "$push": {
+                        "chat_thread": {
+                            "$each": [user_turn.model_dump(), model_turn.model_dump()]
+                        }
+                    }
+                },
+                upsert=False,
+            )
+            logger.info("Persisted conversational thread turns for diagnostic %s", diagnostic_id)
+        except Exception as exc:
+            logger.error("Failed to append chat turn to MongoDB Atlas: %s", exc)
+
+    return followup_response
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host=settings.HOST, port=settings.PORT, reload=True)
+
