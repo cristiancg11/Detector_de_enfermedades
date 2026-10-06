@@ -8,11 +8,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#020617', // slate-950
-        surface: {
-          light: '#0f172a',    // slate-900
-          card: '#1e293b',     // slate-800
-          border: '#334155',   // slate-700
+        obsidian: {
+          950: '#030712', // Ultra-deep void black
+          900: '#070f1e', // Dark obsidian slate
+          850: '#0c162c', // Elevated dark card
+          800: '#13213e', // Glass border slate
+          700: '#1e335e', // Highlight edge
+        },
+        neon: {
+          flora: '#00f59b',  // Bioluminescent Andean emerald green
+          sky: '#00f0ff',    // Cyan plasma
+          solar: '#ffb703',  // Solar high-altitude gold/amber
+          pulse: '#7000ff',  // Electric ultraviolet
+          danger: '#ff2e63', // Crimson alert
         },
         agri: {
           50: '#ecfdf5',
@@ -20,7 +28,7 @@ export default {
           200: '#a7f3d0',
           300: '#6ee7b7',
           400: '#34d399',
-          500: '#10b981',     // emerald-500 primary accent
+          500: '#00f59b',
           600: '#059669',
           700: '#047857',
           800: '#065f46',
@@ -29,20 +37,37 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      boxShadow: {
+        'neon-flora': '0 0 30px rgba(0, 245, 155, 0.25)',
+        'neon-sky': '0 0 30px rgba(0, 240, 255, 0.25)',
+        'neon-solar': '0 0 30px rgba(255, 183, 3, 0.25)',
+        'glass-card': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
       },
       animation: {
-        'scan': 'scan 2.5s ease-in-out infinite',
-        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'scan': 'scan 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+        'pulse-glow': 'pulseGlow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'aurora': 'aurora 10s ease infinite alternate',
       },
       keyframes: {
         scan: {
-          '0%, 100%': { transform: 'translateY(0%)' },
-          '50%': { transform: 'translateY(100%)' },
+          '0%, 100%': { transform: 'translateY(0%)', opacity: '0.9' },
+          '50%': { transform: 'translateY(100%)', opacity: '1' },
         },
         pulseGlow: {
-          '0%, 100%': { opacity: '0.4' },
-          '50%': { opacity: '0.8' },
+          '0%, 100%': { opacity: '0.3', transform: 'scale(1)' },
+          '50%': { opacity: '0.7', transform: 'scale(1.02)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        aurora: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '100%': { backgroundPosition: '100% 50%' },
         }
       }
     },

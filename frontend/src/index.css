@@ -8,32 +8,68 @@
   }
 
   body {
-    background-color: #020617; /* slate-950 */
-    color: #f8fafc;
+    background-color: #030712; /* obsidian-950 */
+    color: #f1f5f9;
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 245, 155, 0.07) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(0, 240, 255, 0.07) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(112, 0, 255, 0.06) 0px, transparent 60%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
+}
+
+/* Futuristic Subtle Dot-Grid Matrix */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(7, 15, 30, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-glow {
+  background: rgba(7, 15, 30, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 245, 155, 0.2);
+  box-shadow: 0 0 35px rgba(0, 245, 155, 0.08);
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #020617;
+  background: #030712;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #1e335e;
   border-radius: 9999px;
+  border: 1px solid rgba(0, 245, 155, 0.2);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #10b981;
+  background: #00f59b;
 }
 
-/* Subtle glassmorphism */
-.backdrop-blur-xs {
-  backdrop-filter: blur(2px);
+/* Shimmer Border Gradient */
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(0, 245, 155, 0.4); }
+  50% { border-color: rgba(0, 240, 255, 0.4); }
+}
+
+.animate-border-glow {
+  animation: borderGlow 4s ease infinite;
 }
