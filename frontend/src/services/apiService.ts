@@ -1,18 +1,21 @@
 /**
- * AgroScan AI - API Service Layer.
+ * AgroScan AI - API Service Layer with Security Interceptors.
+ *
  * Handles HTTP communication with the FastAPI backend and MongoDB Atlas persistence.
- * Attaches JWT Bearer authentication to diagnostic and history requests.
+ * Attaches JWT Bearer authentication to requests and intercepts HTTP 401/403
+ * responses to automatically flush expired sessions and invoke AuthGate.
  */
 
 import { AuthSession } from '../models/AuthSession';
 import { CropDiagnosticRequest } from '../models/CropDiagnosticRequest';
 import { DiagnosticReport } from '../models/DiagnosticReport';
+import { DosageCalculationRequest, DosagePrescription } from '../models/DosagePrescription';
 import {
   ChatMessage,
   ChatFollowUpRequest,
   ChatFollowUpResponse,
   RawDiagnosticResponse,
-  UserProfile
+  UserProfile,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -21,7 +24,7 @@ export class ApiService {
   /**
    * Helper to construct headers with Bearer token authentication.
    */
-  private static getAuthHeaders(includeJson: boolean = false): Record<string, string> {
+  public static getAuthHeaders(includeJson: boolean = false): Record<string, string> {
     const headers: Record<string, string> = {};
     if (includeJson) {
       headers['Content-Type'] = 'application/json';
@@ -34,6 +37,37 @@ export class ApiService {
   }
 
   /**
+   * Centralized HTTP fetch interceptor that attaches JWT Bearer token
+   * and automatically flushes expired sessions upon HTTP 401 Unauthorized or 403 Forbidden.
+   */
+  public static async authFetch(
+    url: string,
+    options: RequestInit = {},
+    includeJson: boolean = false
+  ): Promise<Response> {
+    const authHeaders = this.getAuthHeaders(includeJson);
+    const headers = {
+      ...authHeaders,
+      ...((options.headers as Record<string, string>) || {}),
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    // Check for HTTP 401 Unauthorized or HTTP 403 Forbidden
+    if (response.status === 401 || response.status === 403) {
+      console.warn(
+        `[Security Interceptor] HTTP ${response.status} detected at ${url}. Flushing expired session and invoking AuthGate.`
+      );
+      AuthSession.clearSession(); // Notifies listeners, immediately invoking AuthGate without reloading!
+    }
+
+    return response;
+  }
+
+  /**
    * Submits a diagnostic request to the backend with authenticated user headers.
    */
   public static async submitDiagnostic(
@@ -41,14 +75,16 @@ export class ApiService {
     previewUrl?: string
   ): Promise<DiagnosticReport> {
     const formData = request.toFormData();
-    const headers = this.getAuthHeaders(false);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/diagnose`, {
-        method: 'POST',
-        headers,
-        body: formData,
-      });
+      const response = await this.authFetch(
+        `${API_BASE_URL}/api/v1/diagnose`,
+        {
+          method: 'POST',
+          body: formData,
+        },
+        false
+      );
 
       if (!response.ok) {
         let errorMessage = `Server error (${response.status})`;
@@ -76,16 +112,18 @@ export class ApiService {
     plotIdentifier?: string,
     limit: number = 20
   ): Promise<{ total: number; items: DiagnosticReport[] }> {
-    const headers = this.getAuthHeaders(true);
     const params = new URLSearchParams();
     if (plotIdentifier) params.append('plot_identifier', plotIdentifier);
     params.append('limit', limit.toString());
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/history?${params.toString()}`, {
-        method: 'GET',
-        headers,
-      });
+      const response = await this.authFetch(
+        `${API_BASE_URL}/api/v1/history?${params.toString()}`,
+        {
+          method: 'GET',
+        },
+        true
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch history (${response.status})`);
@@ -224,11 +262,13 @@ export class ApiService {
    * Fetches current authenticated farmer profile from the backend.
    */
   public static async getMe(): Promise<UserProfile> {
-    const headers = this.getAuthHeaders(true);
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
-      method: 'GET',
-      headers,
-    });
+    const response = await this.authFetch(
+      `${API_BASE_URL}/api/v1/auth/me`,
+      {
+        method: 'GET',
+      },
+      true
+    );
 
     if (!response.ok) {
       throw new Error('Unauthorized or session expired');
@@ -255,19 +295,20 @@ export class ApiService {
     message: string,
     chatHistory: ChatMessage[] = []
   ): Promise<ChatFollowUpResponse> {
-    const headers = this.getAuthHeaders(true);
-
     const payload: ChatFollowUpRequest = {
       diagnostic_id: diagnosticId,
       message,
       chat_history: chatHistory,
     };
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/diagnose/${diagnosticId}/chat`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    });
+    const response = await this.authFetch(
+      `${API_BASE_URL}/api/v1/diagnose/${diagnosticId}/chat`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+      true
+    );
 
     if (!response.ok) {
       let errorMsg = `Server error (${response.status})`;
@@ -282,5 +323,41 @@ export class ApiService {
 
     return response.json();
   }
-}
 
+  /**
+   * Dispatches field dosage calibration calculation with 401 interception.
+   */
+  public static async calculateDosage(
+    diagnosticId: string,
+    request: DosageCalculationRequest
+  ): Promise<DosagePrescription> {
+    try {
+      const response = await this.authFetch(
+        `${API_BASE_URL}/api/v1/diagnose/${diagnosticId}/dosage`,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+          signal: AbortSignal.timeout(6000),
+        },
+        true
+      );
+
+      if (!response.ok) {
+        let errMessage = `Dosage API error (${response.status})`;
+        try {
+          const errData = await response.json();
+          errMessage = errData.detail || errMessage;
+        } catch {
+          // ignore
+        }
+        throw new Error(errMessage);
+      }
+
+      const resData = await response.json();
+      return DosagePrescription.fromJSON(resData);
+    } catch (err: any) {
+      console.warn('Backend dosage endpoint unavailable, using local calculation:', err?.message);
+      return DosagePrescription.calculateLocal(request);
+    }
+  }
+}
