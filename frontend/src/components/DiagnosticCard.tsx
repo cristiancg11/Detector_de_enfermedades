@@ -23,18 +23,26 @@ import {
   Layers,
   ArrowRight,
   Download,
-  MessageSquare
+  MessageSquare,
+  Calculator,
 } from 'lucide-react';
 import { DiagnosticReport } from '../models/DiagnosticReport';
+import { DosageCalculatorModal } from './DosageCalculatorModal';
 
 interface DiagnosticCardProps {
   report: DiagnosticReport;
   onOpenChat?: (report: DiagnosticReport) => void;
+  onOpenDosageCalculator?: (report: DiagnosticReport) => void;
 }
 
-export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report, onOpenChat }) => {
+export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
+  report,
+  onOpenChat,
+  onOpenDosageCalculator,
+}) => {
   const [activeTab, setActiveTab] = useState<'split' | 'organic' | 'chemical'>('split');
   const [copied, setCopied] = useState<boolean>(false);
+  const [isDosageModalOpen, setIsDosageModalOpen] = useState<boolean>(false);
 
   const pathogenBadge = report.getPathogenBadge();
   const confidencePercent = Math.round(report.confidenceScore * 100);
@@ -359,11 +367,27 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report, onOpenCh
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+            {/* Primary Action Button: Calculate 20L Backpack Dosage & Rain Risk */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenDosageCalculator) {
+                  onOpenDosageCalculator(report);
+                } else {
+                  setIsDosageModalOpen(true);
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all text-xs font-bold shadow-emerald-soft active:scale-95"
+            >
+              <Calculator className="w-3.5 h-3.5 text-emerald-200" />
+              <span>Calculate 20L Backpack Dosage & Rain Risk</span>
+            </button>
+
             {onOpenChat && (
               <button
                 type="button"
                 onClick={() => onOpenChat(report)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all text-xs font-bold shadow-emerald-soft active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-all text-xs font-bold shadow-sm active:scale-95"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>Ask Agronomist Follow-up Questions</span>
@@ -389,6 +413,17 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({ report, onOpenCh
             </button>
           </div>
         </div>
+
+        {/* Fallback Internal Dosage Calculator Modal */}
+        {!onOpenDosageCalculator && (
+          <DosageCalculatorModal
+            isOpen={isDosageModalOpen}
+            onClose={() => setIsDosageModalOpen(false)}
+            diagnosticId={report.id}
+            cropType={report.cropType}
+            diseaseName={report.diseaseName}
+          />
+        )}
       </div>
     </div>
   );
