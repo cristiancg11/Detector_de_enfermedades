@@ -3,7 +3,7 @@
 **Course:** Web-Oriented Programming (Programación Orientada a la Web)  
 **Target Region:** Department of Nariño, Colombia (Andean Highlands, 1,500m – 3,200m a.s.l.)  
 **Repository:** [github.com/cristiancg11/Detector_de_enfermedades](https://github.com/cristiancg11/Detector_de_enfermedades.git)  
-**Branch:** `feature/mvp-andina-scan`  
+**Branch:** `feature/ai-dosage-calculator`  
 **Frontend URL:** `http://localhost:5180` | **Backend API:** `http://localhost:8000`
 
 ---
@@ -95,6 +95,21 @@ The system integrates client-side image processing via **Web Workers** (`Offscre
 - Large 12MP–48MP mobile photos are processed off the main UI thread in [frontend/src/workers/imageProcessor.worker.ts](frontend/src/workers/imageProcessor.worker.ts).
 - `OffscreenCanvas` resizes the image down to `1024x1024` max bounding box and compresses to JPEG `0.85` quality.
 - Displays real-time worker metrics: dimension reduction, KB savings (85–95% compression), and execution time (ms).
+
+### 🎒 AI Backpack Sprayer Dosage Calculator & Weather-Risk Engine
+- **Field Parameter Configuration**:
+  - **Plot Area Calibration**: Configures parcel dimensions in square meters (e.g., 2,500 m² = 0.25 ha) with automated hectare conversion.
+  - **Standard 20L Sprayer Rig**: Calibrated for standard 20-Liter agricultural backpack sprayers (*bomba de espalda de 20L*) and motorized mist blowers with hollow cone nozzles.
+- **Visual Bento Metrics**:
+  - **Bento Metric 1 (Tank Calibration)**: Exact integer count of 20L backpack tanks needed along with total water volume in liters.
+  - **Bento Metric 2 (Dilution Concentration)**: Precise chemical or biocontrol dosage per 20L tank (grams or cc per tank) plus cumulative plot product requirement.
+- **Andean Weather-Risk & Rain Wash-Off Gauge**:
+  - **4-Hour Safety Threshold**: Evaluates whether foliar applications have sufficient drying/rainfastness time before mountain rain, fog, or condensation occurs.
+  - **Wash-Off Alert Badges**: Highlights optimal windows (6+ hrs), marginal application windows (4–6 hrs with agricultural surfactants), or high wash-off risk (< 4 hrs) where spraying must be postponed.
+- **Untreated Economic Damage Risk Bar**:
+  - Visual color-coded risk meter showing projected harvest yield loss (up to 78%+ for untreated *Phytophthora infestans* Late Blight or *Hemileia vastatrix* Coffee Rust).
+- **Mandatory PPE Security Chips**:
+  - Visual protective gear badges: Nitrile Chemical Gloves, Organic Vapor Respirator, Chemical Splash Goggles, and Neoprene Rubber Boots.
 
 ### 💬 Interactive Agronomic Follow-up Chat Assistant (Gemini 2.5 Flash)
 - **Grounded Technical Consultation**: Farmers can ask follow-up questions immediately after receiving a diagnostic report.
@@ -193,6 +208,7 @@ The system integrates client-side image processing via **Web Workers** (`Offscre
 | `POST` | `/api/v1/auth/login` | Authenticate farmer with credentials and receive JWT | No |
 | `GET` | `/api/v1/auth/me` | Fetch active farmer profile details | **Yes** (Bearer JWT) |
 | `POST` | `/api/v1/diagnose` | Analyze crop image via Gemini 2.5 Flash and persist in Atlas | Optional (Bearer JWT) |
+| `POST` | `/api/v1/diagnose/{diagnostic_id}/dosage` | Calculate 20L backpack sprayer dosage and Andean weather risk | Optional (Bearer JWT) |
 | `POST` | `/api/v1/diagnose/{diagnostic_id}/chat` | Contextual agronomic follow-up consultation with Gemini 2.5 Flash | Optional (Bearer JWT) |
 | `GET` | `/api/v1/history` | Query diagnostic history from MongoDB Atlas filtered by plot | Optional (Bearer JWT) |
 | `GET` | `/api/v1/health` | System health check (Gemini API & MongoDB connectivity) | No |
