@@ -256,7 +256,16 @@ The system integrates client-side image processing via **Web Workers** (`Offscre
 
 ---
 
-## 6. Git Commit Log
+## 6. Bilingual Localization & Theme Switching Architecture
+
+The platform provides a reactive, non-destructive personalization layer:
+- **`ThemeContext` (`src/context/ThemeContext.tsx`)**: Controls Dark/Light modes with instant Tailwind class toggling (`document.documentElement.classList`) and persistence in `localStorage.getItem('agroscan_theme')`.
+- **`LanguageContext` (`src/context/LanguageContext.tsx`)**: Manages seamless English (`en`) and Spanish (`es`) toggling with dictionary fallbacks (`src/locales/translations.ts`), persisting preference in `localStorage.getItem('agroscan_lang')`.
+- **`ThemeLanguageControls` (`src/components/ThemeLanguageControls.tsx`)**: Unified header widget with interactive language indicator (`ES` ⇄ `EN`) and dynamic sun/moon theme triggers.
+
+---
+
+## 7. Git Commit Log
 
 ```text
 * 7ba6ce5 feat(ui): redesign dashboard with modern bento grid and integrate authentication modals
@@ -275,6 +284,6 @@ The system integrates client-side image processing via **Web Workers** (`Offscre
 
 ---
 
-## 7. License & Academic Attribution
+## 8. License & Academic Attribution
 Developed for the **Web-Oriented Programming** course.  
 Released under the MIT License for educational and extension purposes in Nariño, Colombia.
