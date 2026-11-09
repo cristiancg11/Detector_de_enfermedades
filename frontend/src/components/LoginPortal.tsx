@@ -19,8 +19,7 @@ import {
   EyeOff,
   CheckCircle2,
   ArrowRight,
-  Database,
-  Zap
+  Database
 } from 'lucide-react';
 import { FarmerRole, UserProfile } from '../types';
 import { AuthSession } from '../models/AuthSession';

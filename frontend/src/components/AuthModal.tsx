@@ -15,7 +15,6 @@ import {
   Sprout,
   Eye,
   EyeOff,
-  Sparkles,
   AlertCircle,
   ArrowRight,
   ShieldCheck,

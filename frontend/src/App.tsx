@@ -20,8 +20,7 @@ import {
   Database,
   BarChart3,
   ArrowUpRight,
-  ShieldAlert,
-  Sparkles
+  ShieldAlert
 } from 'lucide-react';
 import { CropType, UserProfile } from './types';
 import { CropDiagnosticRequest } from './models/CropDiagnosticRequest';
@@ -40,6 +39,9 @@ import { AuthGate } from './components/AuthGate';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 export const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() =>
+    AuthSession.isAuthenticated()
+  );
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => AuthSession.getUser());
   const [selectedCrop, setSelectedCrop] = useState<CropType>('Potato');
   const [plotIdentifier, setPlotIdentifier] = useState<string>(() => {
@@ -121,6 +123,7 @@ export const App: React.FC = () => {
 
     // Subscribe to reactive auth changes
     const unsubscribe = AuthSession.onAuthStateChange((isAuthed) => {
+      setIsAuthenticated(isAuthed);
       if (isAuthed) {
         const user = AuthSession.getUser();
         setCurrentUser(user);
@@ -142,9 +145,11 @@ export const App: React.FC = () => {
   const handleLogout = () => {
     AuthSession.logout();
     setCurrentUser(null);
+    setIsAuthenticated(false);
   };
 
   const handleAuthSuccess = (user: UserProfile) => {
+    setIsAuthenticated(true);
     setCurrentUser(user);
     setPlotIdentifier(`${user.farmName} - Lot 1`);
     setIsAuthOpen(false);
@@ -277,10 +282,13 @@ export const App: React.FC = () => {
     }
   };
 
+  if (!isAuthenticated) {
+    return <AuthGate onLoginSuccess={handleAuthSuccess} />;
+  }
+
   return (
-    <AuthGate>
-      <ErrorBoundary>
-        <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden">
           {/* Top Navbar Header */}
           <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/90 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
@@ -351,10 +359,10 @@ export const App: React.FC = () => {
                       type="button"
                       onClick={handleLogout}
                       title="Log Out of Session"
-                      className="ml-1 px-2 py-1.5 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all flex items-center gap-1 font-semibold text-xs"
+                      className="ml-1.5 px-3 py-1.5 rounded-xl text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all flex items-center gap-1.5 font-bold text-xs active:scale-95 shadow-xs"
                     >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span className="hidden md:inline">Log Out</span>
+                      <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                      <span>Log Out</span>
                     </button>
                   </div>
                 )}
@@ -648,7 +656,6 @@ export const App: React.FC = () => {
           </footer>
         </div>
       </ErrorBoundary>
-    </AuthGate>
   );
 };
 
