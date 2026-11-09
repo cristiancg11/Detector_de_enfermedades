@@ -1,9 +1,9 @@
 /**
- * AgroScan AI - Fullscreen Mandatory Auth Gate / Route Guard Component.
+ * AgroScan AI - Fullscreen Desktop SaaS Authentication Experience (Split-Layout).
  *
- * Prevents unauthenticated access to the phytosanitary dashboard, diagnostic scanner,
- * and parcel history. Binds directly to the FastAPI JWT authentication endpoints
- * (/login & /register) with responsive error toasts, loading spinners, and session persistence.
+ * Implements a high-end desktop web authentication gate with Andean agricultural branding,
+ * high-altitude crop intelligence showcases, and tabbed Sign In / Register Farm flows
+ * strictly bound to FastAPI JWT endpoints. Unauthenticated access is completely barred.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -21,16 +21,56 @@ import {
   ShieldCheck,
   CheckCircle2,
   Loader2,
+  CloudSun,
+  FlaskConical,
+  Activity,
+  MapPin,
 } from 'lucide-react';
 import { AuthSession } from '../models/AuthSession';
 import { UserProfile } from '../types';
 import { registerUser, API_BASE_URL } from '../services/api';
 
 interface AuthGateProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  onLoginSuccess?: (user: UserProfile) => void;
 }
 
-export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
+const ANDEAN_CROPS = [
+  {
+    name: 'Potato',
+    scientific: 'Solanum tuberosum',
+    icon: '🥔',
+    variety: 'Pastusa Suprema / Diacol Capiro',
+    altitude: '2,900m – 3,200m',
+    region: 'Túquerres Plateau',
+  },
+  {
+    name: 'Coffee',
+    scientific: 'Coffea arabica',
+    icon: '☕',
+    variety: 'Castillo Nariño / Caturra',
+    altitude: '1,650m – 2,100m',
+    region: 'Sandoná Canyons',
+  },
+  {
+    name: 'Corn',
+    scientific: 'Zea mays',
+    icon: '🌽',
+    variety: 'Choclo Nariñense / Capia',
+    altitude: '2,200m – 2,800m',
+    region: 'Pasto Slopes',
+  },
+  {
+    name: 'Tomato',
+    scientific: 'Solanum lycopersicum',
+    icon: '🍅',
+    variety: 'Chonto Andino / Larga Vida',
+    altitude: '1,800m – 2,400m',
+    region: 'Juanambú Valley',
+  },
+];
+
+export const AuthGate: React.FC<AuthGateProps> = ({ children, onLoginSuccess }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() =>
     AuthSession.isAuthenticated()
   );
@@ -48,14 +88,20 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
   useEffect(() => {
     const unsubscribe = AuthSession.onAuthStateChange((authed) => {
       setIsAuthenticated(authed);
+      if (authed && onLoginSuccess) {
+        const user = AuthSession.getUser();
+        if (user) {
+          onLoginSuccess(user);
+        }
+      }
     });
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [onLoginSuccess]);
 
-  // If farmer is authenticated, render protected dashboard application
-  if (isAuthenticated) {
+  // If farmer is authenticated and children exist, render protected view
+  if (isAuthenticated && children) {
     return <>{children}</>;
   }
 
@@ -77,7 +123,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
     try {
       if (mode === 'login') {
         if (!cleanEmail || !cleanPassword) {
-          throw new Error('Please enter both your email address and password.');
+          throw new Error('Please enter both your work email address and password.');
         }
 
         try {
@@ -119,11 +165,22 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
           };
 
           const token = authData.access_token || authData.token || `token-${Date.now()}`;
-          setSuccessMessage('Authentication successful! Loading your Andean farm parcels...');
-          setTimeout(() => {
-            AuthSession.saveSession(token, userProfile);
-          }, 350);
+          setSuccessMessage('Authentication successful! Entering dashboard...');
+          
+          AuthSession.saveSession(token, userProfile);
+          if (onLoginSuccess) {
+            onLoginSuccess(userProfile);
+          }
         } catch (apiErr: any) {
+          const isConnectionError =
+            apiErr?.message?.includes('Failed to fetch') ||
+            apiErr?.message?.includes('NetworkError') ||
+            apiErr?.message?.includes('Load failed');
+          if (isConnectionError) {
+            throw new Error(
+              `Cannot connect to authentication service at ${API_BASE_URL}/auth/login. Please verify backend is running.`
+            );
+          }
           throw apiErr;
         }
       } else {
@@ -145,32 +202,20 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
           });
 
           setSuccessMessage('Farm registered successfully! Access granted.');
-          // AuthSession is already persisted inside registerUser
+          const user = AuthSession.getUser();
+          if (user && onLoginSuccess) {
+            onLoginSuccess(user);
+          }
         } catch (apiErr: any) {
-          // Resilient offline registration if backend server is unreachable
-          if (
+          const isConnectionError =
             apiErr?.message?.includes('Failed to fetch') ||
             apiErr?.message?.includes('NetworkError') ||
-            apiErr?.message?.includes('Load failed')
-          ) {
-            const fallbackUser: UserProfile = {
-              id: `usr-${Date.now()}`,
-              email: cleanEmail,
-              fullName: fullName.trim(),
-              farmName: farmName.trim(),
-              municipality: 'Túquerres (Plateau - 3,100m)',
-              role: 'Smallholder Farmer',
-              avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanEmail}`,
-              createdAt: new Date().toISOString(),
-            };
-            const fallbackToken = `offline-jwt-${Date.now()}`;
-            setSuccessMessage('Account registered locally! Offline mode active.');
-            setTimeout(() => {
-              AuthSession.saveSession(fallbackToken, fallbackUser);
-            }, 350);
-            return;
+            apiErr?.message?.includes('Load failed');
+          if (isConnectionError) {
+            throw new Error(
+              `Cannot connect to registration service at ${API_BASE_URL}/auth/register. Please verify backend is running.`
+            );
           }
-
           throw apiErr;
         }
       }
@@ -182,190 +227,309 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden select-none">
-      {/* High-End Dark Landing Hero Backdrop with Ambient Gradient Blur Circles */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-emerald-950/20 rounded-full blur-[140px] pointer-events-none" />
+    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex flex-col lg:flex-row relative overflow-hidden select-none">
+      {/* LEFT / HERO PANEL (Hidden on small screens, 50% width on desktop lg:flex) */}
+      <section className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 xl:p-16 overflow-hidden bg-gradient-to-br from-slate-950 via-emerald-950/60 to-slate-950 border-r border-slate-800/80">
+        {/* Agricultural Ambient Lighting Circles */}
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-900/20 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Subtle Grid Texture Overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
+        {/* Subtle Grid Texture Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b20_1px,transparent_1px),linear-gradient(to_bottom,#1e293b20_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] pointer-events-none opacity-60" />
 
-      {/* Main Centered Auth Container - Backdrop Dismissal Disabled */}
-      <div className="relative w-full max-w-xl bg-slate-900/90 border border-slate-800/90 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 shadow-2xl z-10 my-auto transition-all">
-        {/* Brand Emblem & Headline */}
-        <div className="text-center pb-6 border-b border-slate-800/80">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 mb-4 shadow-xl shadow-emerald-950/60 ring-8 ring-emerald-500/5">
-            <Sprout className="w-8 h-8" />
+        {/* Top Branding Section */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3.5 mb-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-xl shadow-emerald-950/60 ring-4 ring-emerald-500/20">
+              <Sprout className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-black text-white tracking-tight">
+                  AgroScan<span className="text-emerald-400">.AI</span>
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold tracking-wider uppercase border border-emerald-500/30">
+                  Atlas v2.0
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                <MapPin className="w-3 h-3 text-emerald-400" />
+                Nariño Andean Highlands • Precision Phytosanitary Platform
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Center Hero Content */}
+        <div className="relative z-10 my-auto py-8 space-y-8 max-w-xl">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-emerald-500/30 text-emerald-300 text-xs font-semibold shadow-inner">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Andean Smallholder Crop Protection</span>
+            </div>
+
+            <h1 className="text-3xl xl:text-4xl 2xl:text-5xl font-black text-white tracking-tight leading-tight">
+              AgroScan AI — High-Altitude Phytosanitary Intelligence
+            </h1>
+
+            <p className="text-sm xl:text-base text-slate-300 leading-relaxed font-normal">
+              Empowering farmers across Nariño with instant multimodal leaf pathology diagnostics,
+              precision 20L backpack sprayer dilution ratios, and microclimatic rainfall risk telemetry.
+            </p>
           </div>
 
-          <div className="flex items-center justify-center gap-2 mb-1.5">
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              AgroScan<span className="text-emerald-400">.AI</span>
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-wider border border-emerald-500/30">
-              Mandatory Gate
+          {/* Andean Precision Crops Grid */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            {ANDEAN_CROPS.map((crop) => (
+              <div
+                key={crop.name}
+                className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 hover:border-emerald-500/40 transition-all backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-2.5 mb-1.5">
+                  <span className="text-xl" role="img" aria-label={crop.name}>
+                    {crop.icon}
+                  </span>
+                  <div>
+                    <h2 className="text-xs font-bold text-white">{crop.name}</h2>
+                    <p className="text-[10px] text-slate-400 italic">{crop.scientific}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-emerald-400 font-mono mt-1 pt-1.5 border-t border-slate-800/60">
+                  <span>{crop.altitude}</span>
+                  <span className="text-slate-400 truncate max-w-[100px]">{crop.region}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Highlighted Feature Pills */}
+          <div className="flex flex-wrap gap-2.5 pt-1">
+            <span className="px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-2 shadow-sm">
+              <Activity className="w-3.5 h-3.5 text-emerald-400" />
+              Gemini 2.5 Flash Multimodal Vision
+            </span>
+            <span className="px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-sky-500/30 text-sky-300 text-xs font-semibold flex items-center gap-2 shadow-sm">
+              <FlaskConical className="w-3.5 h-3.5 text-sky-400" />
+              20L Sprayer Dosage Engine
+            </span>
+            <span className="px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-teal-500/30 text-teal-300 text-xs font-semibold flex items-center gap-2 shadow-sm">
+              <CloudSun className="w-3.5 h-3.5 text-teal-400" />
+              Andean Weather Wash-Off Risk
             </span>
           </div>
-
-          <p className="text-sm font-semibold text-emerald-400/90 tracking-wide">
-            Andean Phytosanitary Intelligence
-          </p>
-          <p className="text-xs text-slate-400 max-w-md mx-auto mt-2 leading-relaxed">
-            Authentication is required to access crop health diagnostics, 20L backpack sprayer dosage calibration, and parcel history.
-          </p>
         </div>
 
-        {/* Tabbed Switcher: Sign In / Register Farm */}
-        <div className="mt-6 p-1 rounded-2xl bg-slate-950/70 border border-slate-800/90 grid grid-cols-2 gap-1">
-          <button
-            type="button"
-            onClick={() => handleModeSwitch('login')}
-            className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-              mode === 'login'
-                ? 'bg-slate-800 text-white shadow-md border border-slate-700/60'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Lock className="w-3.5 h-3.5" />
-            <span>Sign In</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleModeSwitch('register')}
-            className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-              mode === 'register'
-                ? 'bg-slate-800 text-white shadow-md border border-slate-700/60'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Trees className="w-3.5 h-3.5" />
-            <span>Register Farm</span>
-          </button>
+        {/* Bottom Hero Trust Indicators */}
+        <div className="relative z-10 pt-6 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>FastAPI Backend • MongoDB Atlas Cloud Engine</span>
+          </div>
+          <span className="font-mono text-[11px] text-slate-500">Department of Nariño, Colombia</span>
         </div>
+      </section>
 
-        {/* Feedback Alerts */}
-        {errorMessage && (
-          <div className="mt-4 p-3.5 rounded-xl bg-rose-950/50 border border-rose-800/80 text-rose-300 text-xs flex items-center gap-2.5 animate-in fade-in duration-200">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span className="leading-tight">{errorMessage}</span>
-          </div>
-        )}
+      {/* RIGHT / FORM PANEL (Full width on mobile, 50% width on desktop) */}
+      <section className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10 lg:p-14 xl:p-16 relative overflow-y-auto min-h-screen">
+        {/* Subtle Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-950/20 rounded-full blur-[100px] pointer-events-none" />
 
-        {successMessage && (
-          <div className="mt-4 p-3.5 rounded-xl bg-emerald-950/50 border border-emerald-800/80 text-emerald-300 text-xs flex items-center gap-2.5 animate-in fade-in duration-200">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="leading-tight">{successMessage}</span>
-          </div>
-        )}
-
-        {/* Authentication Form */}
-        <form onSubmit={handleFormSubmit} className="mt-5 space-y-4">
-          {mode === 'register' && (
-            <>
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Full Name / Legal Representative *
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Mateo Narváez"
-                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-                  />
-                </div>
+        {/* Spacious Glassmorphic Form Card */}
+        <div className="max-w-xl mx-auto w-full p-8 sm:p-10 lg:p-12 bg-slate-900/90 border border-slate-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl space-y-6 relative z-10">
+          {/* Header on Form Panel */}
+          <div>
+            {/* Mobile-Only Brand Emblem */}
+            <div className="lg:hidden flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md">
+                <Sprout className="w-5 h-5" />
               </div>
-
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Farm or Estate Name *
-                </label>
-                <div className="relative">
-                  <Trees className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    required
-                    value={farmName}
-                    onChange={(e) => setFarmName(e.target.value)}
-                    placeholder="e.g. Finca La Cumbre"
-                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-                  />
-                </div>
+                <span className="text-xl font-black text-white tracking-tight">
+                  AgroScan<span className="text-emerald-400">.AI</span>
+                </span>
+                <p className="text-[11px] text-slate-400">Andean Phytosanitary Intelligence</p>
               </div>
-            </>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-black text-white tracking-tight">
+                {mode === 'login' ? 'Sign In to Farm Dashboard' : 'Register New Farm Parcel'}
+              </h2>
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold uppercase tracking-wider">
+                Protected Route
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+              {mode === 'login'
+                ? 'Enter your registered credentials to access diagnostic scanning and plot telemetry.'
+                : 'Create your farmer profile and link your Andean parcel to start phytosanitary monitoring.'}
+            </p>
+          </div>
+
+          {/* Tab Switch: Sign In vs Register Farm */}
+          <div className="p-1 rounded-2xl bg-slate-950/70 border border-slate-800/90 grid grid-cols-2 gap-1">
+            <button
+              type="button"
+              onClick={() => handleModeSwitch('login')}
+              className={`py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                mode === 'login'
+                  ? 'bg-slate-800 text-white shadow-md border border-slate-700/60'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Lock className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Sign In</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleModeSwitch('register')}
+              className={`py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                mode === 'register'
+                  ? 'bg-slate-800 text-white shadow-md border border-slate-700/60'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Trees className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Register Farm</span>
+            </button>
+          </div>
+
+          {/* Feedback Alerts */}
+          {errorMessage && (
+            <div className="p-4 rounded-2xl bg-rose-950/50 border border-rose-800/80 text-rose-300 text-xs flex items-start gap-3 animate-in fade-in duration-200">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-bold text-rose-200">Authentication Alert</p>
+                <p className="leading-relaxed text-rose-300/90">{errorMessage}</p>
+              </div>
+            </div>
           )}
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Account Email Address *
-            </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="farmer@agroscan.co"
-                className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-              />
+          {successMessage && (
+            <div className="p-4 rounded-2xl bg-emerald-950/50 border border-emerald-800/80 text-emerald-300 text-xs flex items-center gap-3 animate-in fade-in duration-200">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="font-medium leading-tight">{successMessage}</span>
             </div>
-          </div>
+          )}
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Password *
-            </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={mode === 'register' ? 'Minimum 6 characters' : 'Enter your password'}
-                className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full mt-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-bold text-xs transition-all shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Authenticating with Andean Cloud...</span>
-              </span>
-            ) : (
+          {/* Authentication Form */}
+          <form onSubmit={handleFormSubmit} className="space-y-4 pt-1">
+            {mode === 'register' && (
               <>
-                <span>{mode === 'login' ? 'Sign In to Farm' : 'Register Farm Account'}</span>
-                <ArrowRight className="w-4 h-4" />
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                    Full Name / Legal Representative *
+                  </label>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. Mateo Narváez"
+                      className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 transition-all shadow-inner"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                    Farm Name / Municipality *
+                  </label>
+                  <div className="relative">
+                    <Trees className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      required
+                      value={farmName}
+                      onChange={(e) => setFarmName(e.target.value)}
+                      placeholder="e.g. Finca Bella Vista - Túquerres Plateau"
+                      className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 transition-all shadow-inner"
+                    />
+                  </div>
+                </div>
               </>
             )}
-          </button>
-        </form>
 
-        {/* Security Footer Note */}
-        <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-center gap-2 text-[11px] text-slate-500">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          <span>Protected Route • Requires Active JWT Session & Farmer Credential</span>
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                Work Email Address *
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="farmer@agroscan.co"
+                  className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 transition-all shadow-inner"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                Password *
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={mode === 'register' ? 'Minimum 6 characters' : 'Enter your account password'}
+                  className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl pl-10 pr-11 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 transition-all shadow-inner"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-1"
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit Action Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full mt-4 py-3.5 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-black text-xs sm:text-sm tracking-wide transition-all shadow-xl shadow-emerald-950/60 flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Connecting to Andean Cloud...</span>
+                </span>
+              ) : (
+                <>
+                  <span>{mode === 'login' ? 'Enter AgroScan Dashboard' : 'Register New Farm'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Security & Endpoint Status Footer */}
+          <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>JWT Bearer Security Required</span>
+            </span>
+            <span className="font-mono text-[10px] text-slate-500">
+              API: http://localhost:8000/api/v1/auth
+            </span>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
+
+export default AuthGate;
