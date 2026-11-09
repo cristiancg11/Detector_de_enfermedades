@@ -32,6 +32,15 @@ import { DiagnosticReport } from '../models/DiagnosticReport';
 import { DosageCalculatorModal } from './DosageCalculatorModal';
 import { VoiceNarrationButton } from './VoiceNarrationButton';
 
+/**
+ * Defensive string normalizer preventing TypeError: Cannot read properties of undefined (reading 'trim')
+ */
+export const safeStr = (val: unknown, fallback: string = ''): string => {
+  if (typeof val === 'string') return val.trim();
+  if (val === null || val === undefined) return fallback;
+  return String(val).trim();
+};
+
 interface DiagnosticCardProps {
   report?: DiagnosticReport | any | null;
   isLoading?: boolean;
