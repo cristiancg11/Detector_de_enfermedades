@@ -18,7 +18,7 @@ import {
   UserProfile,
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+export const API_BASE_URL = 'http://localhost:8000/api/v1';
 
 export class ApiService {
   /**
@@ -78,7 +78,7 @@ export class ApiService {
 
     try {
       const response = await this.authFetch(
-        `${API_BASE_URL}/api/v1/diagnose`,
+        `${API_BASE_URL}/diagnose`,
         {
           method: 'POST',
           body: formData,
@@ -118,7 +118,7 @@ export class ApiService {
 
     try {
       const response = await this.authFetch(
-        `${API_BASE_URL}/api/v1/history?${params.toString()}`,
+        `${API_BASE_URL}/history?${params.toString()}`,
         {
           method: 'GET',
         },
@@ -150,7 +150,7 @@ export class ApiService {
     model: string;
   }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/health`, {
+      const response = await fetch(`${API_BASE_URL}/health`, {
         signal: AbortSignal.timeout(3500),
       });
       if (response.ok) {
@@ -169,25 +169,24 @@ export class ApiService {
 
   /**
    * Registers a new user account on the backend.
+   * Sends POST http://localhost:8000/api/v1/auth/register with JSON: { email, password, full_name, farm_name }
    */
   public static async register(data: {
     email: string;
     password: string;
     fullName: string;
     farmName: string;
-    municipality: string;
-    role: string;
+    municipality?: string;
+    role?: string;
   }): Promise<{ token: string; user: UserProfile }> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
         email: data.email,
         password: data.password,
         full_name: data.fullName,
         farm_name: data.farmName,
-        municipality: data.municipality,
-        role: data.role,
       }),
     });
 
@@ -203,17 +202,23 @@ export class ApiService {
     }
 
     const resData = await response.json();
+    console.log('[AgroScan API] User registered successfully:', resData);
+
+    const token = resData.access_token;
+    AuthSession.saveSession(token, resData);
+    console.log('[AgroScan API] Token and session persisted in AuthSession:', AuthSession.getToken());
+
     return {
-      token: resData.access_token,
+      token,
       user: {
-        id: resData.user.id,
-        email: resData.user.email,
-        fullName: resData.user.full_name,
-        farmName: resData.user.farm_name,
-        municipality: resData.user.municipality,
-        role: resData.user.role,
-        avatarUrl: resData.user.avatar_url,
-        createdAt: resData.user.created_at,
+        id: resData.user?.id || `usr-${Date.now()}`,
+        email: resData.user?.email || data.email,
+        fullName: resData.user?.full_name || data.fullName,
+        farmName: resData.user?.farm_name || data.farmName,
+        municipality: resData.user?.municipality || 'Túquerres (High Plateau)',
+        role: resData.user?.role || 'Smallholder Farmer',
+        avatarUrl: resData.user?.avatar_url,
+        createdAt: resData.user?.created_at || new Date().toISOString(),
       },
     };
   }
@@ -225,9 +230,9 @@ export class ApiService {
     email: string;
     password: string;
   }): Promise<{ token: string; user: UserProfile }> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(credentials),
     });
 
@@ -246,14 +251,14 @@ export class ApiService {
     return {
       token: resData.access_token,
       user: {
-        id: resData.user.id,
-        email: resData.user.email,
-        fullName: resData.user.full_name,
-        farmName: resData.user.farm_name,
-        municipality: resData.user.municipality,
-        role: resData.user.role,
-        avatarUrl: resData.user.avatar_url,
-        createdAt: resData.user.created_at,
+        id: resData.user?.id || `usr-${Date.now()}`,
+        email: resData.user?.email || credentials.email,
+        fullName: resData.user?.full_name || 'Farmer',
+        farmName: resData.user?.farm_name || 'Farm',
+        municipality: resData.user?.municipality || 'Nariño',
+        role: resData.user?.role || 'Smallholder Farmer',
+        avatarUrl: resData.user?.avatar_url,
+        createdAt: resData.user?.created_at || new Date().toISOString(),
       },
     };
   }
@@ -263,7 +268,7 @@ export class ApiService {
    */
   public static async getMe(): Promise<UserProfile> {
     const response = await this.authFetch(
-      `${API_BASE_URL}/api/v1/auth/me`,
+      `${API_BASE_URL}/auth/me`,
       {
         method: 'GET',
       },
@@ -302,7 +307,7 @@ export class ApiService {
     };
 
     const response = await this.authFetch(
-      `${API_BASE_URL}/api/v1/diagnose/${diagnosticId}/chat`,
+      `${API_BASE_URL}/diagnose/${diagnosticId}/chat`,
       {
         method: 'POST',
         body: JSON.stringify(payload),
@@ -333,7 +338,7 @@ export class ApiService {
   ): Promise<DosagePrescription> {
     try {
       const response = await this.authFetch(
-        `${API_BASE_URL}/api/v1/diagnose/${diagnosticId}/dosage`,
+        `${API_BASE_URL}/diagnose/${diagnosticId}/dosage`,
         {
           method: 'POST',
           body: JSON.stringify(request),

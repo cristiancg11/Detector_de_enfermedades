@@ -24,12 +24,11 @@ import {
 } from 'lucide-react';
 import { AuthSession } from '../models/AuthSession';
 import { UserProfile } from '../types';
+import { registerUser, API_BASE_URL } from '../services/api';
 
 interface AuthGateProps {
   children: React.ReactNode;
 }
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() =>
@@ -96,7 +95,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
         }
 
         try {
-          const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+          const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -161,52 +160,15 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
         }
 
         try {
-          const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-            },
-            body: JSON.stringify({
-              email: cleanEmail,
-              password: cleanPassword,
-              full_name: fullName.trim(),
-              farm_name: farmName.trim(),
-              municipality: 'Túquerres (High Plateau - 3,100m)',
-              role: 'Smallholder Farmer',
-            }),
+          await registerUser({
+            email: cleanEmail,
+            password: cleanPassword,
+            full_name: fullName.trim(),
+            farm_name: farmName.trim(),
           });
 
-          if (!response.ok) {
-            let errorText = 'Registration could not be completed.';
-            try {
-              const resJson = await response.json();
-              errorText = resJson.detail || errorText;
-            } catch {
-              // Ignore json parse error
-            }
-            throw new Error(errorText);
-          }
-
-          const authData = await response.json();
-          const userProfile: UserProfile = {
-            id: authData.user?.id || `usr-${Date.now()}`,
-            email: authData.user?.email || cleanEmail,
-            fullName: authData.user?.full_name || fullName.trim(),
-            farmName: authData.user?.farm_name || farmName.trim(),
-            municipality: authData.user?.municipality || 'Túquerres (High Plateau - 3,100m)',
-            role: authData.user?.role || 'Smallholder Farmer',
-            avatarUrl:
-              authData.user?.avatar_url ||
-              `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanEmail}`,
-            createdAt: authData.user?.created_at || new Date().toISOString(),
-          };
-
-          const token = authData.access_token || authData.token || `token-${Date.now()}`;
           setSuccessMessage('Farm registered successfully! Access granted.');
-          setTimeout(() => {
-            AuthSession.saveSession(token, userProfile);
-          }, 350);
+          // AuthSession is already persisted inside registerUser
         } catch (apiErr: any) {
           // Resilient offline registration if backend server is unreachable
           if (

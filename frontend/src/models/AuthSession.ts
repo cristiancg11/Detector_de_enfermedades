@@ -115,20 +115,47 @@ export class AuthSession {
 
   /**
    * Persists authentication session token and farmer profile into localStorage
-   * and notifies all reactive subscribers.
+   * and notifies all reactive subscribers. Handles both UserProfile and raw auth responses.
    */
-  public static saveSession(token: string, profile: UserProfile): void {
+  public static saveSession(token: string, profile: any): void {
+    const userObj = profile?.user || profile || {};
     const session: StoredSession = {
       token,
       user: {
-        id: profile.id,
-        email: profile.email,
-        fullName: profile.fullName,
-        farmName: profile.farmName,
-        municipality: profile.municipality || 'Túquerres (High Plateau)',
-        role: profile.role || 'Smallholder Farmer',
-        avatarUrl: profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile.email}`,
-        createdAt: profile.createdAt || new Date().toISOString(),
+        id: userObj.id || profile.id || `usr-${Date.now()}`,
+        email: userObj.email || profile.email || '',
+        fullName:
+          userObj.full_name ||
+          userObj.fullName ||
+          profile.full_name ||
+          profile.fullName ||
+          'Registered Farmer',
+        farmName:
+          userObj.farm_name ||
+          userObj.farmName ||
+          profile.farm_name ||
+          profile.farmName ||
+          'Andean Farm',
+        municipality:
+          userObj.municipality ||
+          profile.municipality ||
+          'Túquerres (High Plateau)',
+        role:
+          userObj.role ||
+          profile.role ||
+          'Smallholder Farmer',
+        avatarUrl:
+          userObj.avatar_url ||
+          userObj.avatarUrl ||
+          profile.avatar_url ||
+          profile.avatarUrl ||
+          `https://api.dicebear.com/7.x/bottts/svg?seed=${userObj.email || profile.email || 'farmer'}`,
+        createdAt:
+          userObj.created_at ||
+          userObj.createdAt ||
+          profile.created_at ||
+          profile.createdAt ||
+          new Date().toISOString(),
       },
       expiresAt: Date.now() + this.SESSION_DURATION_MS,
     };
