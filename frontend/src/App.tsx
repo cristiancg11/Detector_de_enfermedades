@@ -319,7 +319,7 @@ const AppDashboard: React.FC = () => {
             </div>
 
             {/* Right Header Controls */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               {/* MongoDB Atlas & AI Engine Live Status Pill */}
               <div className="hidden xl:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shadow-xs transition-colors">
                 <span
@@ -341,9 +341,6 @@ const AppDashboard: React.FC = () => {
                   </span>
                 </span>
               </div>
-
-              {/* Theme & Language Controls Widget */}
-              <ThemeLanguageControls />
 
               {/* Logged-In Farmer User Profile Badge & Functional Log Out Button */}
               {currentUser && (
@@ -393,6 +390,12 @@ const AppDashboard: React.FC = () => {
                   </span>
                 )}
               </button>
+
+              {/* Corner Divider */}
+              <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 hidden sm:block" />
+
+              {/* Far Top-Right Corner: Theme & Language Controls Widget */}
+              <ThemeLanguageControls />
             </div>
           </div>
         </header>

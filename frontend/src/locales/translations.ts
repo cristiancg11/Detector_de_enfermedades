@@ -397,3 +397,4 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     dosageClose: 'Close Calculator',
   },
 };
+

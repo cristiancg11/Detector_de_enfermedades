@@ -231,8 +231,8 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children, onLoginSuccess }) 
 
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row relative overflow-hidden select-none transition-colors duration-200">
-      {/* Floating Top-Right Theme and Language Switcher Controls */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50">
+      {/* Floating Top-Right Theme and Language Switcher Controls strictly in the corner */}
+      <div className="fixed top-4 right-4 sm:top-5 sm:right-6 z-50">
         <ThemeLanguageControls showLabels />
       </div>
 

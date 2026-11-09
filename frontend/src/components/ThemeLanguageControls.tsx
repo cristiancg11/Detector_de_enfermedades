@@ -24,7 +24,7 @@ export const ThemeLanguageControls: React.FC<ThemeLanguageControlsProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-800 backdrop-blur-md shadow-xs transition-colors duration-200 ${className}`}
+      className={`inline-flex items-center gap-1.5 p-1 rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-slate-300 dark:border-slate-700/80 backdrop-blur-xl shadow-md transition-all duration-200 ${className}`}
       role="region"
       aria-label="Localization and Theme Controls"
     >
@@ -34,7 +34,7 @@ export const ThemeLanguageControls: React.FC<ThemeLanguageControlsProps> = ({
         onClick={toggleLanguage}
         title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
         aria-label={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 border border-slate-200/80 dark:border-slate-700 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-500/40 active:scale-95"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 border border-slate-200 dark:border-slate-700 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-500/40 active:scale-95"
       >
         <Globe className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
         <span className="font-mono tracking-wider font-extrabold text-[11px]">
@@ -53,12 +53,22 @@ export const ThemeLanguageControls: React.FC<ThemeLanguageControlsProps> = ({
         onClick={toggleTheme}
         title={isDark ? t('themeLight') : t('themeDark')}
         aria-label={isDark ? t('themeLight') : t('themeDark')}
-        className="p-1.5 rounded-xl transition-all duration-200 text-slate-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-white/80 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 active:scale-95"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all duration-200 text-slate-700 dark:text-slate-200 hover:text-amber-600 dark:hover:text-amber-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 shadow-xs active:scale-95 text-xs font-bold"
       >
         {isDark ? (
-          <Sun className="w-4 h-4 text-amber-400 animate-in fade-in zoom-in-75 duration-200" />
+          <>
+            <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="font-mono text-[11px] font-extrabold uppercase tracking-wide">
+              {t('themeLight')}
+            </span>
+          </>
         ) : (
-          <Moon className="w-4 h-4 text-slate-700 animate-in fade-in zoom-in-75 duration-200" />
+          <>
+            <Moon className="w-4 h-4 text-slate-700 shrink-0" />
+            <span className="font-mono text-[11px] font-extrabold uppercase tracking-wide">
+              {t('themeDark')}
+            </span>
+          </>
         )}
       </button>
     </div>

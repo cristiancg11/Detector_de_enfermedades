@@ -108,23 +108,23 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md sm:max-w-lg bg-white border-l border-slate-200 shadow-2xl flex flex-col">
+        <div className="w-screen max-w-md sm:max-w-lg bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col">
           {/* Drawer Header */}
-          <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+          <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-emerald-soft">
                 <History className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                   <span>Farm Plots & History</span>
                   {cloudSyncing && (
-                    <span className="text-[10px] text-emerald-700 font-mono animate-pulse flex items-center gap-1">
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono animate-pulse flex items-center gap-1">
                       <Database className="w-3 h-3" /> Syncing...
                     </span>
                   )}
                 </h3>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   {allReports.length} records persisted across monitored lots
                 </p>
               </div>
@@ -133,14 +133,14 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Search & Actions Bar */}
-          <div className="p-4 border-b border-slate-100 bg-white space-y-3">
+          <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -148,7 +148,7 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by disease, plot, or crop..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600 transition-colors"
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-600 dark:focus:border-emerald-500 transition-colors"
               />
             </div>
 
@@ -158,9 +158,9 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
                   type="button"
                   onClick={handleExportJSON}
                   disabled={allReports.length === 0}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold disabled:opacity-40 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold disabled:opacity-40 transition-colors shadow-sm"
                 >
-                  <Download className="w-3.5 h-3.5 text-sky-600" />
+                  <Download className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                   <span>Export JSON</span>
                 </button>
               </div>
@@ -169,7 +169,7 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="inline-flex items-center gap-1 text-[11px] text-rose-600 hover:text-rose-700 font-bold transition-colors"
+                  className="inline-flex items-center gap-1 text-[11px] text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-bold transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Clear All</span>
@@ -180,15 +180,15 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
 
           {/* Plot Summary Filter Pills */}
           {plotSummaries.length > 0 && (
-            <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/60 overflow-x-auto">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 overflow-x-auto">
               <div className="flex items-center gap-2 min-w-max">
                 <button
                   type="button"
                   onClick={() => setSelectedPlotFilter(null)}
                   className={`text-xs px-3 py-1.5 rounded-xl border transition-all ${
                     selectedPlotFilter === null
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-sm'
-                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 font-bold shadow-sm'
+                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   All Plots ({allReports.length})
@@ -207,12 +207,12 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
                     }
                     className={`text-xs px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 ${
                       selectedPlotFilter === summary.plotIdentifier
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-sm'
-                        : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 font-bold shadow-sm'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     <span>{summary.plotIdentifier}</span>
-                    <span className="w-4 h-4 rounded-full bg-slate-100 text-[10px] flex items-center justify-center text-slate-600 font-mono font-bold">
+                    <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] flex items-center justify-center text-slate-600 dark:text-slate-300 font-mono font-bold">
                       {summary.reportCount}
                     </span>
                   </button>
@@ -225,9 +225,9 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {displayReports.length === 0 ? (
               <div className="h-64 flex flex-col items-center justify-center text-center p-6 text-slate-400">
-                <FileText className="w-12 h-12 mb-3 text-slate-300" />
-                <p className="text-sm font-bold text-slate-700">No diagnostic reports found</p>
-                <p className="text-xs text-slate-500 mt-1">
+                <FileText className="w-12 h-12 mb-3 text-slate-300 dark:text-slate-600" />
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">No diagnostic reports found</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   Run a crop diagnostic to record analysis in persistent memory.
                 </p>
               </div>
@@ -241,12 +241,12 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
                       onSelectReport(report);
                       onClose();
                     }}
-                    className="p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50/50 border border-slate-200 hover:border-emerald-300 transition-all cursor-pointer group shadow-sm flex flex-col justify-between"
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50/50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between"
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2">
                         <span className="text-sm">{report.getCropIcon()}</span>
-                        <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-800 dark:group-hover:text-emerald-300 transition-colors">
                           {report.diseaseName}
                         </span>
                       </div>
@@ -254,7 +254,7 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
                       <button
                         type="button"
                         onClick={(e) => handleDeleteReport(e, report.id)}
-                        className="text-slate-400 hover:text-rose-600 p-1 transition-colors"
+                        className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 p-1 transition-colors"
                         title="Delete report"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -262,7 +262,7 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 mb-2 flex-wrap text-[11px]">
-                      <span className="px-2 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200 font-medium">
+                      <span className="px-2 py-0.5 rounded-full bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 font-medium">
                         {report.cropType}
                       </span>
                       <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${pathogenBadge.badgeClass}`}>
@@ -271,22 +271,22 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           report.severityLevel === 'CRITICAL'
-                            ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                            ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
                             : report.severityLevel === 'MODERATE'
-                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                            : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                            ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                            : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                         }`}
                       >
                         {report.severityLevel}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-200/80">
-                      <span className="flex items-center gap-1 font-mono text-slate-600">
-                        <MapPin className="w-3 h-3 text-emerald-600" />
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/80 dark:border-slate-700">
+                      <span className="flex items-center gap-1 font-mono text-slate-600 dark:text-slate-400">
+                        <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                         <span className="truncate max-w-[140px]">{report.plotIdentifier}</span>
                       </span>
-                      <span className="font-mono text-slate-400">{report.formattedDate()}</span>
+                      <span className="font-mono text-slate-400 dark:text-slate-500">{report.formattedDate()}</span>
                     </div>
                   </div>
                 );
