@@ -18,10 +18,14 @@ import {
   Sparkles,
   MapPin,
   Clock,
-  Gauge
+  Gauge,
+  Mic,
+  MicOff,
+  FileText,
 } from 'lucide-react';
 import { CropType, WorkerProcessRequest, WorkerProcessResponse } from '../types';
 import { CropDiagnosticRequest } from '../models/CropDiagnosticRequest';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
 
 interface CropScannerProps {
   onScanRequest: (request: CropDiagnosticRequest, previewUrl: string) => void;
@@ -95,6 +99,27 @@ export const CropScanner: React.FC<CropScannerProps> = ({
   const [workerMetrics, setWorkerMetrics] = useState<WorkerProcessResponse | null>(null);
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [fieldNotes, setFieldNotes] = useState<string>('');
+
+  const {
+    isListening,
+    transcript,
+    startListening,
+    stopListening,
+    clearTranscript,
+    isRecognitionSupported,
+  } = useVoiceAssistant();
+
+  // Append transcribed speech to field notes
+  useEffect(() => {
+    if (transcript) {
+      setFieldNotes((prev) => {
+        const separator = prev.trim() ? ' ' : '';
+        return `${prev.trim()}${separator}${transcript.trim()}`;
+      });
+      clearTranscript();
+    }
+  }, [transcript, clearTranscript]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -261,28 +286,28 @@ export const CropScanner: React.FC<CropScannerProps> = ({
   };
 
   return (
-    <div className="relative rounded-3xl p-6 sm:p-8 bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all overflow-hidden">
+    <div className="relative rounded-3xl p-6 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-card hover:shadow-card-hover transition-colors overflow-hidden">
       {/* Decorative Gradient Bar */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-500" />
 
       {/* Section Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-100 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               Crop Health Scanning Station
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
             Off-main-thread image processing & Google Gemini 2.5 Flash Vision Diagnostics
           </p>
         </div>
 
         {/* Rapid Sample Presets */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+          <span className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>Fast Test:</span>
           </span>
           {CROP_OPTIONS.map((c) => (
@@ -290,7 +315,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
               key={c.type}
               type="button"
               onClick={() => handleLoadSample(c.type)}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shadow-sm"
+              className="px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 text-slate-700 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-400 text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shadow-xs"
             >
               <span>{c.icon}</span>
               <span>{c.label}</span>
@@ -301,7 +326,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
 
       {/* Crop Selector Grid */}
       <div className="mb-8">
-        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3">
           1. Select Target Andean Crop
         </label>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -314,8 +339,8 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                 onClick={() => onCropChange(c.type)}
                 className={`p-4 rounded-2xl border text-left transition-all duration-200 relative flex flex-col justify-between ${
                   isSelected
-                    ? `bg-emerald-50/70 border-emerald-500 ring-2 ring-emerald-500/20 shadow-sm`
-                    : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 shadow-sm'
+                    ? `bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs`
+                    : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50/60 dark:hover:bg-slate-700/60 shadow-xs'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -325,13 +350,13 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                   )}
                 </div>
                 <div>
-                  <h4 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
+                  <h4 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
                     {c.label}
                   </h4>
-                  <p className="text-xs text-emerald-700 font-bold truncate mt-0.5">
+                  <p className="text-xs text-emerald-700 dark:text-emerald-400 font-bold truncate mt-0.5">
                     {c.variety}
                   </p>
-                  <p className="text-[10px] text-slate-500 mt-1 truncate flex items-center gap-1 font-medium">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 truncate flex items-center gap-1 font-medium">
                     <Activity className="w-2.5 h-2.5 text-slate-400" />
                     <span>{c.region}</span>
                   </p>
@@ -345,10 +370,10 @@ export const CropScanner: React.FC<CropScannerProps> = ({
       {/* Plot / Lot Identifier Designation */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <label htmlFor="plot-input" className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+          <label htmlFor="plot-input" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
             2. Designate Farm Plot / Lot Identifier
           </label>
-          <span className="text-[11px] text-slate-500 font-medium">Persisted in MongoDB Atlas</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Persisted in MongoDB Atlas</span>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
@@ -359,7 +384,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
               value={plotIdentifier}
               onChange={(e) => onPlotChange(e.target.value)}
               placeholder="e.g., Plot A - North Furrow, Lot 4, Greenhouse 2..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition-colors shadow-sm"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition-colors shadow-xs"
             />
           </div>
           <div className="flex flex-wrap gap-1.5 items-center">
@@ -370,8 +395,8 @@ export const CropScanner: React.FC<CropScannerProps> = ({
                 onClick={() => onPlotChange(preset)}
                 className={`text-xs px-3 py-2 rounded-xl border transition-all ${
                   plotIdentifier === preset
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-sm'
-                    : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-600 text-emerald-800 dark:text-emerald-300 font-bold shadow-xs'
+                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
                 {preset}
@@ -381,10 +406,64 @@ export const CropScanner: React.FC<CropScannerProps> = ({
         </div>
       </div>
 
+      {/* Field Notes / Observaciones de Campo with Voice Dictation */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>3. Field Observations / Notas de Voz</span>
+          </label>
+          {isRecognitionSupported && (
+            <button
+              type="button"
+              onClick={() => {
+                if (isListening) {
+                  stopListening();
+                } else {
+                  startListening();
+                }
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all shadow-xs active:scale-95 ${
+                isListening
+                  ? 'bg-rose-600 text-white ring-4 ring-rose-500/20 animate-pulse'
+                  : 'bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+              }`}
+            >
+              {isListening ? (
+                <>
+                  <MicOff className="w-3.5 h-3.5" />
+                  <span>Detener Micrófono</span>
+                </>
+              ) : (
+                <>
+                  <Mic className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>Dictar por Voz (Mic)</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+
+        {isListening && (
+          <div className="mb-2 p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-medium flex items-center gap-2 animate-pulse">
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping" />
+            <span>🎙️ Escuchando observaciones de campo... (Habla síntomas como manchas o marchitez)</span>
+          </div>
+        )}
+
+        <textarea
+          rows={2}
+          value={fieldNotes}
+          onChange={(e) => setFieldNotes(e.target.value)}
+          placeholder="Dicte o escriba observaciones visibles de campo (ej. manchas circulares amarillas, marchitez, presencia de insectos)..."
+          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition-colors shadow-inner"
+        />
+      </div>
+
       {/* Image Upload / Capture Area */}
       <div className="mb-6">
-        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-          3. Upload or Capture Plant Photo
+        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+          4. Upload or Capture Plant Photo
         </label>
 
         <div
@@ -395,10 +474,10 @@ export const CropScanner: React.FC<CropScannerProps> = ({
           onClick={() => fileInputRef.current?.click()}
           className={`relative border-2 border-dashed rounded-3xl p-6 sm:p-8 cursor-pointer transition-all text-center flex flex-col items-center justify-center min-h-[220px] overflow-hidden ${
             dragActive
-              ? 'border-emerald-500 bg-emerald-50/50 scale-[1.01]'
+              ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 scale-[1.01]'
               : previewUrl
-              ? 'border-slate-200 bg-slate-50/40'
-              : 'border-slate-300 bg-slate-50/70 hover:border-emerald-400 hover:bg-emerald-50/20'
+              ? 'border-slate-200 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-950/40'
+              : 'border-slate-300 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950/60 hover:border-emerald-400 hover:bg-emerald-50/20'
           }`}
         >
           <input
