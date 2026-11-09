@@ -16,7 +16,6 @@ import {
   MapPin,
   User,
   LogOut,
-  LogIn,
   Trees,
   Database,
   BarChart3,
@@ -35,14 +34,13 @@ import { CropScanner } from './components/CropScanner';
 import { DiagnosticCard } from './components/DiagnosticCard';
 import { PlotHistoryDrawer } from './components/PlotHistoryDrawer';
 import { AuthModal } from './components/AuthModal';
-import { LoginPortal } from './components/LoginPortal';
 import { AgronomicChatModal } from './components/AgronomicChatModal';
 import { DosageCalculatorModal } from './components/DosageCalculatorModal';
 import { DosageCalculationRequest, DosagePrescription } from './models/DosagePrescription';
+import { AuthGate } from './components/AuthGate';
 
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => AuthSession.getUser());
-  const [viewMode, setViewMode] = useState<'login' | 'dashboard'>('dashboard');
   const [selectedCrop, setSelectedCrop] = useState<CropType>('Potato');
   const [plotIdentifier, setPlotIdentifier] = useState<string>(() => {
     const user = AuthSession.getUser();
@@ -104,24 +102,44 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
-    refreshMetrics();
+    // Only fetch history and check server when authenticated
+    if (AuthSession.isAuthenticated()) {
+      refreshMetrics();
+      ApiService.checkHealth().then((res) => {
+        setBackendStatus(res);
+      });
 
-    // Check backend and MongoDB Atlas connectivity
-    ApiService.checkHealth().then((res) => {
-      setBackendStatus(res);
-    });
+      // Load initial report from local history or fetch from cloud with Bearer token
+      const existing = FarmPlotHistoryManager.getAllReports();
+      if (existing.length > 0) {
+        setCurrentReport(existing[0]);
+      }
 
-    // Load initial report from local history or fetch from cloud with Bearer token
-    const existing = FarmPlotHistoryManager.getAllReports();
-    if (existing.length > 0) {
-      setCurrentReport(existing[0]);
+      fetchPlotHistory();
     }
 
-    fetchPlotHistory();
+    // Subscribe to reactive auth changes
+    const unsubscribe = AuthSession.onAuthStateChange((isAuthed) => {
+      if (isAuthed) {
+        const user = AuthSession.getUser();
+        setCurrentUser(user);
+        if (user) {
+          setPlotIdentifier(`${user.farmName} - Lot 1`);
+        }
+        refreshMetrics();
+        fetchPlotHistory();
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const handleLogout = () => {
-    AuthSession.clearSession();
+    AuthSession.logout();
     setCurrentUser(null);
   };
 
@@ -129,12 +147,7 @@ export const App: React.FC = () => {
     setCurrentUser(user);
     setPlotIdentifier(`${user.farmName} - Lot 1`);
     setIsAuthOpen(false);
-    setViewMode('dashboard');
     fetchPlotHistory();
-  };
-
-  const handleContinueAsGuest = () => {
-    setViewMode('dashboard');
   };
 
   const handleOpenChat = (reportToChat: DiagnosticReport) => {
@@ -260,106 +273,87 @@ export const App: React.FC = () => {
     }
   };
 
-  // Optional full-screen portal view if explicitly activated
-  if (viewMode === 'login') {
-    return (
-      <LoginPortal
-        onLoginSuccess={handleAuthSuccess}
-        onContinueAsGuest={handleContinueAsGuest}
-        backendStatus={backendStatus}
-      />
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden">
-      {/* Top Navbar Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/90 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-          {/* Brand Logo & Andean Subtitle */}
-          <div className="flex items-center gap-3.5 shrink-0">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-emerald-soft">
-              <Leaf className="w-6 h-6" />
+    <AuthGate>
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden">
+        {/* Top Navbar Header */}
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/90 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+            {/* Brand Logo & Andean Subtitle */}
+            <div className="flex items-center gap-3.5 shrink-0">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-emerald-soft">
+                <Leaf className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    AgroScan<span className="text-emerald-600">.AI</span>
+                  </h1>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold tracking-wider uppercase">
+                    Atlas v2.0
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
+                  <MapPin className="w-3 h-3 text-emerald-600" />
+                  Nariño Andean Highlands • Phytosanitary AI
+                </p>
+              </div>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                  AgroScan<span className="text-emerald-600">.AI</span>
-                </h1>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold tracking-wider uppercase">
-                  Atlas v2.0
+
+            {/* Right Header Controls */}
+            <div className="flex items-center gap-3">
+              {/* MongoDB Atlas & AI Engine Live Status Pill */}
+              <div className="hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs shadow-sm">
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    backendStatus.gemini_configured
+                      ? 'bg-emerald-500'
+                      : 'bg-amber-500'
+                  } animate-pulse`}
+                />
+                <span className="text-slate-700 font-mono text-[11px]">
+                  {backendStatus.model || 'Gemini 2.5 Flash'}
+                </span>
+                <span className="text-slate-300">|</span>
+                <span className="flex items-center gap-1 text-[11px] text-emerald-700 font-mono font-medium">
+                  <Database className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>MongoDB Atlas {backendStatus.mongodb_connected ? '(Live)' : '(Synced)'}</span>
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
-                <MapPin className="w-3 h-3 text-emerald-600" />
-                Nariño Andean Highlands • Phytosanitary AI
-              </p>
-            </div>
-          </div>
 
-          {/* Right Header Controls */}
-          <div className="flex items-center gap-3">
-            {/* MongoDB Atlas & AI Engine Live Status Pill */}
-            <div className="hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs shadow-sm">
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  backendStatus.gemini_configured
-                    ? 'bg-emerald-500'
-                    : 'bg-amber-500'
-                } animate-pulse`}
-              />
-              <span className="text-slate-700 font-mono text-[11px]">
-                {backendStatus.model || 'Gemini 2.5 Flash'}
-              </span>
-              <span className="text-slate-300">|</span>
-              <span className="flex items-center gap-1 text-[11px] text-emerald-700 font-mono font-medium">
-                <Database className="w-3.5 h-3.5 text-emerald-600" />
-                <span>MongoDB Atlas {backendStatus.mongodb_connected ? '(Live)' : '(Synced)'}</span>
-              </span>
-            </div>
-
-            {/* Farmer User Profile Badge or Sign In Button */}
-            {currentUser ? (
-              <div className="flex items-center gap-2.5 p-1.5 pl-2.5 pr-2 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition-all shadow-sm">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 font-bold text-xs shrink-0 overflow-hidden">
-                  {currentUser.avatarUrl ? (
-                    <img
-                      src={currentUser.avatarUrl}
-                      alt={currentUser.fullName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span>{currentUser.fullName.slice(0, 2).toUpperCase()}</span>
-                  )}
+              {/* Logged-In Farmer User Profile Badge & Functional Log Out Button */}
+              {currentUser && (
+                <div className="flex items-center gap-2.5 p-1.5 pl-2.5 pr-2 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition-all shadow-sm">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 font-bold text-xs shrink-0 overflow-hidden">
+                    {currentUser.avatarUrl ? (
+                      <img
+                        src={currentUser.avatarUrl}
+                        alt={currentUser.fullName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{currentUser.fullName.slice(0, 2).toUpperCase()}</span>
+                    )}
+                  </div>
+                  <div className="hidden sm:block text-left leading-tight">
+                    <p className="text-xs font-bold text-slate-900 truncate max-w-[130px]">
+                      {currentUser.fullName}
+                    </p>
+                    <p className="text-[10px] text-emerald-700 font-medium truncate max-w-[130px]">
+                      {currentUser.farmName}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    title="Log Out of Session"
+                    className="ml-1 px-2 py-1.5 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all flex items-center gap-1 font-semibold text-xs"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">Log Out</span>
+                  </button>
                 </div>
-                <div className="hidden sm:block text-left leading-tight">
-                  <p className="text-xs font-bold text-slate-900 truncate max-w-[130px]">
-                    {currentUser.fullName}
-                  </p>
-                  <p className="text-[10px] text-emerald-700 font-medium truncate max-w-[130px]">
-                    {currentUser.farmName}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  title="Sign Out"
-                  className="ml-1 p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all flex items-center gap-1"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline text-[11px] font-semibold">Sign Out</span>
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsAuthOpen(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-emerald-soft active:scale-95"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In</span>
-              </button>
-            )}
+              )}
 
             {/* History Drawer Toggle Button */}
             <button
@@ -663,7 +657,8 @@ export const App: React.FC = () => {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </AuthGate>
   );
 };
 
