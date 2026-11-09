@@ -1,9 +1,8 @@
 /**
-/**
- * AgroScan AI - AuthSession Model (OOP Domain Layer).
+ * AgroScan AI - Client-Side AuthSession Model (OOP Domain Layer).
  *
- * Encapsulates authenticated user token, farmer profile, and session persistence
- * in browser localStorage with expiration handling and demo identities.
+ * Encapsulates authenticated user token, farmer profile (id, email, fullName, farmName),
+ * and persistent session state in browser localStorage with expiration handling.
  */
 
 import { UserProfile } from '../types';
@@ -65,7 +64,7 @@ export class AuthSession {
   ];
 
   /**
-   * Retrieves active session from localStorage if present and unexpired.
+   * Retrieves active session from localStorage if present and valid.
    */
   public static getSession(): StoredSession | null {
     try {
@@ -84,11 +83,28 @@ export class AuthSession {
   }
 
   /**
-   * Returns current authenticated user profile or null.
+   * Persists authentication session token and farmer profile into localStorage.
    */
-  public static getCurrentUser(): UserProfile | null {
-    const session = this.getSession();
-    return session ? session.user : null;
+  public static saveSession(token: string, profile: UserProfile): void {
+    const session: StoredSession = {
+      token,
+      user: {
+        id: profile.id,
+        email: profile.email,
+        fullName: profile.fullName,
+        farmName: profile.farmName,
+        municipality: profile.municipality || 'Túquerres (High Plateau)',
+        role: profile.role || 'Smallholder Farmer',
+        avatarUrl: profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile.email}`,
+        createdAt: profile.createdAt || new Date().toISOString(),
+      },
+      expiresAt: Date.now() + this.SESSION_DURATION_MS,
+    };
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(session));
+    } catch (err) {
+      console.error('Failed to store auth session:', err);
+    }
   }
 
   /**
@@ -100,26 +116,25 @@ export class AuthSession {
   }
 
   /**
-   * Returns true if user session is currently valid and active.
+   * Returns current authenticated farmer profile or null.
    */
-  public static isAuthenticated(): boolean {
-    return this.getCurrentUser() !== null;
+  public static getUser(): UserProfile | null {
+    const session = this.getSession();
+    return session ? session.user : null;
   }
 
   /**
-   * Persists authentication session into localStorage.
+   * Alias for getUser() to ensure backwards compatibility across callers.
    */
-  public static saveSession(token: string, user: UserProfile): void {
-    const session: StoredSession = {
-      token,
-      user,
-      expiresAt: Date.now() + this.SESSION_DURATION_MS,
-    };
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(session));
-    } catch (err) {
-      console.error('Failed to store auth session:', err);
-    }
+  public static getCurrentUser(): UserProfile | null {
+    return this.getUser();
+  }
+
+  /**
+   * Returns true if user session is currently valid and active.
+   */
+  public static isAuthenticated(): boolean {
+    return this.getUser() !== null && this.getToken() !== null;
   }
 
   /**
@@ -141,7 +156,7 @@ export class AuthSession {
       this.DEMO_PROFILES.find((p) => p.email.toLowerCase() === email.toLowerCase()) ||
       this.DEMO_PROFILES[0];
 
-    const token = `demo-token-${profile.id}-${Date.now()}`;
+    const token = `demo-jwt-token-${profile.id}-${Date.now()}`;
     this.saveSession(token, profile);
     return { token, user: profile };
   }
