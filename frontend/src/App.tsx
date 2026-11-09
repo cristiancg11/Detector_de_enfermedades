@@ -4,8 +4,8 @@
  * Clean, high-contrast, modern agricultural biotech design with crisp white surfaces,
  * deep Andean emerald accents, precision sky telemetry, and warm alert indicators.
  *
- * Features immediate login gateway on application load, MongoDB Atlas persistence,
- * JWT authentication, OffscreenCanvas Web Worker image processing, and Gemini 2.5 Flash vision.
+ * Features authenticated user session management, glassmorphic sign-in modal,
+ * JWT-authorized diagnostic uploads, MongoDB Atlas persistence, and Gemini 2.5 Flash vision.
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -39,17 +39,19 @@ import { LoginPortal } from './components/LoginPortal';
 import { AgronomicChatModal } from './components/AgronomicChatModal';
 
 export const App: React.FC = () => {
-  // Always display the login portal on application load as requested
-  const [viewMode, setViewMode] = useState<'login' | 'dashboard'>('login');
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => AuthSession.getUser());
+  const [viewMode, setViewMode] = useState<'login' | 'dashboard'>('dashboard');
   const [selectedCrop, setSelectedCrop] = useState<CropType>('Potato');
-  const [plotIdentifier, setPlotIdentifier] = useState<string>('Plot A - Upper Terrace');
+  const [plotIdentifier, setPlotIdentifier] = useState<string>(() => {
+    const user = AuthSession.getUser();
+    return user ? `${user.farmName} - Lot 1` : 'Plot A - Upper Terrace';
+  });
   const [currentReport, setCurrentReport] = useState<DiagnosticReport | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [chatReport, setChatReport] = useState<DiagnosticReport | null>(null);
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [historyCount, setHistoryCount] = useState<number>(0);
   const [criticalCount, setCriticalCount] = useState<number>(0);
   const [monitoredPlotsCount, setMonitoredPlotsCount] = useState<number>(0);
@@ -81,42 +83,42 @@ export const App: React.FC = () => {
     setMonitoredPlotsCount(uniquePlots.size || 1);
   };
 
+  // Fetch plot history with active JWT authorization
+  const fetchPlotHistory = async () => {
+    try {
+      const res = await ApiService.getHistory();
+      if (res.items && res.items.length > 0) {
+        for (const rep of res.items) {
+          FarmPlotHistoryManager.saveReport(rep);
+        }
+        setCurrentReport(res.items[0]);
+        refreshMetrics();
+      }
+    } catch (err) {
+      console.warn('Authenticated history synchronization failed or server unreachable:', err);
+    }
+  };
+
   useEffect(() => {
     refreshMetrics();
-
-    // Check existing auth session if available
-    const activeUser = AuthSession.getCurrentUser();
-    if (activeUser) {
-      setCurrentUser(activeUser);
-      setPlotIdentifier(`${activeUser.farmName} - Lot 1`);
-    }
 
     // Check backend and MongoDB Atlas connectivity
     ApiService.checkHealth().then((res) => {
       setBackendStatus(res);
     });
 
-    // Load initial report from history if available, or try cloud
+    // Load initial report from local history or fetch from cloud with Bearer token
     const existing = FarmPlotHistoryManager.getAllReports();
     if (existing.length > 0) {
       setCurrentReport(existing[0]);
-    } else {
-      ApiService.getHistory().then((res) => {
-        if (res.items && res.items.length > 0) {
-          for (const rep of res.items) {
-            FarmPlotHistoryManager.saveReport(rep);
-          }
-          setCurrentReport(res.items[0]);
-          refreshMetrics();
-        }
-      });
     }
+
+    fetchPlotHistory();
   }, []);
 
   const handleLogout = () => {
     AuthSession.clearSession();
     setCurrentUser(null);
-    setViewMode('login');
   };
 
   const handleAuthSuccess = (user: UserProfile) => {
@@ -124,6 +126,7 @@ export const App: React.FC = () => {
     setPlotIdentifier(`${user.farmName} - Lot 1`);
     setIsAuthOpen(false);
     setViewMode('dashboard');
+    fetchPlotHistory();
   };
 
   const handleContinueAsGuest = () => {
@@ -135,7 +138,7 @@ export const App: React.FC = () => {
     setIsChatOpen(true);
   };
 
-  // Main scan dispatcher
+  // Main scan dispatcher with JWT authorization attached to requests
   const handleScanRequest = async (
     request: CropDiagnosticRequest,
     previewUrl: string
@@ -143,7 +146,7 @@ export const App: React.FC = () => {
     setIsAnalyzing(true);
 
     try {
-      // 1. Dispatch authenticated request to FastAPI backend (saved into MongoDB Atlas)
+      // 1. Dispatch authenticated request to FastAPI backend (saved into MongoDB Atlas with Bearer token)
       const report = await ApiService.submitDiagnostic(request, previewUrl);
 
       // 2. Persist into localStorage via OOP FarmPlotHistoryManager
@@ -156,7 +159,7 @@ export const App: React.FC = () => {
         diagnosticRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 150);
     } catch (err: any) {
-      console.warn('API submission notice:', err?.message);
+      console.warn('API diagnostic submission notice:', err?.message);
 
       // High-fidelity fallback for offline resilient evaluation
       const fallbackReport = DiagnosticReport.fromJSON(
@@ -203,7 +206,7 @@ export const App: React.FC = () => {
     }
   };
 
-  // If in login portal view mode, render full-screen login gateway
+  // Optional full-screen portal view if explicitly activated
   if (viewMode === 'login') {
     return (
       <LoginPortal
@@ -218,9 +221,9 @@ export const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden">
       {/* Top Navbar Header */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/90 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           {/* Brand Logo & Andean Subtitle */}
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-3.5 shrink-0">
             <div className="w-11 h-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-emerald-soft">
               <Leaf className="w-6 h-6" />
             </div>
@@ -261,39 +264,46 @@ export const App: React.FC = () => {
               </span>
             </div>
 
-            {/* Farmer User Profile Badge or Return to Login Portal */}
+            {/* Farmer User Profile Badge or Sign In Button */}
             {currentUser ? (
-              <div className="flex items-center gap-2 p-1.5 pr-3 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition-all shadow-sm">
-                <img
-                  src={currentUser.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=farmer'}
-                  alt={currentUser.fullName}
-                  className="w-8 h-8 rounded-xl object-cover bg-emerald-100 border border-emerald-300"
-                />
+              <div className="flex items-center gap-2.5 p-1.5 pl-2.5 pr-2 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition-all shadow-sm">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 font-bold text-xs shrink-0 overflow-hidden">
+                  {currentUser.avatarUrl ? (
+                    <img
+                      src={currentUser.avatarUrl}
+                      alt={currentUser.fullName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{currentUser.fullName.slice(0, 2).toUpperCase()}</span>
+                  )}
+                </div>
                 <div className="hidden sm:block text-left leading-tight">
-                  <p className="text-xs font-bold text-slate-900 truncate max-w-[120px]">
+                  <p className="text-xs font-bold text-slate-900 truncate max-w-[130px]">
                     {currentUser.fullName}
                   </p>
-                  <p className="text-[10px] text-emerald-700 font-medium truncate max-w-[120px]">
+                  <p className="text-[10px] text-emerald-700 font-medium truncate max-w-[130px]">
                     {currentUser.farmName}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  title="Sign Out / Back to Login"
-                  className="ml-1 p-1 rounded-lg text-slate-400 hover:text-rose-600 transition-colors"
+                  title="Sign Out"
+                  className="ml-1 p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all flex items-center gap-1"
                 >
                   <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline text-[11px] font-semibold">Sign Out</span>
                 </button>
               </div>
             ) : (
               <button
                 type="button"
-                onClick={() => setViewMode('login')}
+                onClick={() => setIsAuthOpen(true)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-emerald-soft active:scale-95"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span>Farmer Sign In</span>
+                <span>Sign In</span>
               </button>
             )}
 
@@ -329,12 +339,12 @@ export const App: React.FC = () => {
                   <span className="text-xs font-semibold text-slate-500">Active Parcel Session:</span>
                   <span className="text-sm font-black text-slate-900">{currentUser.farmName}</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200">
-                    {currentUser.municipality}
+                    {currentUser.municipality || 'Nariño Highlands'}
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 mt-0.5">
                   Farmer: <strong className="text-slate-900">{currentUser.fullName}</strong> • Role:{' '}
-                  <span className="text-emerald-700 font-semibold">{currentUser.role}</span>
+                  <span className="text-emerald-700 font-semibold">{currentUser.role || 'Smallholder Farmer'}</span>
                 </p>
               </div>
             </div>
@@ -350,10 +360,11 @@ export const App: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setViewMode('login')}
-                className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 transition-colors px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100"
+                onClick={handleLogout}
+                className="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 transition-colors px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200"
               >
-                <span>Login Portal →</span>
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
               </button>
             </div>
           </div>
@@ -367,18 +378,18 @@ export const App: React.FC = () => {
                 <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
                   <span>Guest Preview Mode</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                    MongoDB Atlas Available
+                    MongoDB Atlas Connected
                   </span>
                 </h3>
                 <p className="text-xs text-slate-600 mt-0.5">
-                  Sign in or register your farm parcel to save diagnoses, track plot history, and access cloud intelligence.
+                  Sign in or register your farm parcel to save diagnoses, track plot history, and attach your JWT token to all requests.
                 </p>
               </div>
             </div>
 
             <button
               type="button"
-              onClick={() => setViewMode('login')}
+              onClick={() => setIsAuthOpen(true)}
               className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-emerald-soft active:scale-95 shrink-0"
             >
               Sign In / Register Farm
@@ -548,7 +559,7 @@ export const App: React.FC = () => {
         onReportsUpdated={refreshMetrics}
       />
 
-      {/* Farmer Authentication Modal */}
+      {/* Glassmorphic Farmer Authentication Modal */}
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
