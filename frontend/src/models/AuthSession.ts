@@ -32,42 +32,6 @@ export class AuthSession {
   }
 
   /**
-   * Pre-configured Andean smallholder and agronomist demo identities.
-   */
-  public static readonly DEMO_PROFILES: UserProfile[] = [
-    {
-      id: 'usr-carlos-guancha',
-      email: 'carlos@agroscan.co',
-      fullName: 'Don Carlos Guancha',
-      farmName: 'Finca Bella Vista',
-      municipality: 'Túquerres (Plateau)',
-      role: 'Smallholder Farmer',
-      avatarUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80',
-      createdAt: '2026-01-15T08:00:00Z',
-    },
-    {
-      id: 'usr-elena-bastidas',
-      email: 'elena@agrosavia.co',
-      fullName: 'Dra. Elena Bastidas',
-      farmName: 'Centro Obonuco (AGROSAVIA)',
-      municipality: 'Pasto (Galeras Foothills)',
-      role: 'Agronomist / Extensionist',
-      avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-      createdAt: '2026-02-10T09:30:00Z',
-    },
-    {
-      id: 'usr-mariana-jojoa',
-      email: 'mariana.jojoa@cafesandona.org',
-      fullName: 'Doña Mariana Jojoa',
-      farmName: 'Cafetal El Mirador',
-      municipality: 'Sandoná (Western Ridge)',
-      role: 'Cooperative Producer',
-      avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
-      createdAt: '2026-03-01T10:00:00Z',
-    },
-  ];
-
-  /**
    * Subscribes a reactive listener to authentication state changes.
    * Returns an unsubscribe function.
    */
@@ -106,6 +70,13 @@ export class AuthSession {
         this.clearSession();
         return null;
       }
+
+      // Purge any legacy demo or mock tokens
+      if (typeof parsed.token === 'string' && (parsed.token.startsWith('demo-') || parsed.token.startsWith('offline-jwt-'))) {
+        this.clearSession();
+        return null;
+      }
+
       return parsed;
     } catch (err) {
       console.warn('Failed to read auth session from storage:', err);
@@ -197,8 +168,13 @@ export class AuthSession {
     const session = this.getSession();
     if (!session) return false;
 
-    const hasValidToken = typeof session.token === 'string' && session.token.trim().length > 0;
-    const hasValidUser = session.user && typeof session.user.id === 'string' && session.user.id.trim().length > 0;
+    const hasValidToken =
+      typeof session.token === 'string' &&
+      session.token.trim().length > 0 &&
+      !session.token.startsWith('demo-') &&
+      !session.token.startsWith('offline-jwt-');
+    const hasValidUser =
+      session.user && typeof session.user.id === 'string' && session.user.id.trim().length > 0;
     const isUnexpired = typeof session.expiresAt === 'number' && Date.now() < session.expiresAt;
 
     return Boolean(hasValidToken && hasValidUser && isUnexpired);
@@ -221,19 +197,6 @@ export class AuthSession {
    */
   public static logout(): void {
     this.clearSession();
-  }
-
-  /**
-   * Instant sign-in with pre-configured Andean demo account.
-   */
-  public static loginAsDemo(email: string): { token: string; user: UserProfile } {
-    const profile =
-      this.DEMO_PROFILES.find((p) => p.email.toLowerCase() === email.toLowerCase()) ||
-      this.DEMO_PROFILES[0];
-
-    const token = `demo-jwt-token-${profile.id}-${Date.now()}`;
-    this.saveSession(token, profile);
-    return { token, user: profile };
   }
 
   /**
