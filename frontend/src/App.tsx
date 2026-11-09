@@ -88,7 +88,7 @@ const AppDashboard: React.FC = () => {
     setCriticalCount(criticals.length);
 
     // Distinct plots count
-    const uniquePlots = new Set(all.map((r) => r.plotIdentifier.toLowerCase().trim()));
+    const uniquePlots = new Set(all.map((r) => (r?.plotIdentifier || '').toLowerCase().trim()).filter(Boolean));
     setMonitoredPlotsCount(uniquePlots.size || 1);
   };
 

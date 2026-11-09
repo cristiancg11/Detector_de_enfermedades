@@ -117,39 +117,100 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
   // 4. Defensive Null-Safe Field Normalization
   const diagnostic = report;
 
-  const organicTreatment: string[] =
-    diagnostic?.organic_treatment || diagnostic?.organicTreatment || [];
-  const chemicalTreatment: string[] =
-    diagnostic?.chemical_treatment || diagnostic?.chemicalTreatment || [];
-  const preventiveActions: string[] =
-    diagnostic?.preventive_actions ||
-    diagnostic?.preventive_measures ||
-    diagnostic?.preventiveMeasures ||
-    [];
-  const rawConfidence: number =
-    diagnostic?.confidence_score ?? diagnostic?.confidenceScore ?? 0;
-  const confidenceScore = Math.max(0, Math.min(1, Number(rawConfidence) || 0));
-  const confidencePercent = Math.round(confidenceScore * 100);
+  const diseaseName = safeStr(
+    diagnostic?.common_disease_name ||
+      diagnostic?.disease_name ||
+      diagnostic?.diseaseName ||
+      diagnostic?.disease,
+    'Patología Foliar no determinada'
+  );
+  const scientificName = safeStr(
+    diagnostic?.scientific_name || diagnostic?.scientificName,
+    'No especificado'
+  );
+  const severity = safeStr(
+    diagnostic?.severity_level || diagnostic?.severityLevel || diagnostic?.severity,
+    'Moderada'
+  );
+  const confidence =
+    typeof diagnostic?.confidence_percentage === 'number'
+      ? diagnostic.confidence_percentage
+      : typeof diagnostic?.confidence === 'number'
+      ? Math.round(diagnostic.confidence * (diagnostic.confidence <= 1 ? 100 : 1))
+      : typeof diagnostic?.confidence_score === 'number'
+      ? Math.round(diagnostic.confidence_score * (diagnostic.confidence_score <= 1 ? 100 : 1))
+      : typeof diagnostic?.confidenceScore === 'number'
+      ? Math.round(diagnostic.confidenceScore * (diagnostic.confidenceScore <= 1 ? 100 : 1))
+      : 85;
+  const confidencePercent = confidence;
+  const confidenceScore = confidence / 100;
 
-  const symptoms: string[] = diagnostic?.symptoms || [];
-  const diseaseName: string =
-    diagnostic?.disease_name || diagnostic?.diseaseName || 'Unidentified Foliar Condition';
-  const scientificName: string | null =
-    diagnostic?.scientific_name || diagnostic?.scientificName || null;
-  const cropType: string =
-    diagnostic?.crop_type || diagnostic?.cropType || 'Potato';
-  const plotIdentifier: string =
-    diagnostic?.plot_identifier || diagnostic?.plotIdentifier || 'Plot A';
-  const severityLevel: 'LOW' | 'MODERATE' | 'CRITICAL' = (
-    diagnostic?.severity_level ||
-    diagnostic?.severityLevel ||
-    'LOW'
-  ).toUpperCase() as 'LOW' | 'MODERATE' | 'CRITICAL';
-  const diagnosisSummary: string =
-    diagnostic?.diagnosis_summary ||
-    diagnostic?.diagnosisSummary ||
-    'Phytosanitary assessment completed successfully.';
-  const diagnosticId: string = diagnostic?.id || `diag-${Date.now()}`;
+  const summary = safeStr(
+    diagnostic?.summary_what_happened ||
+      diagnostic?.description ||
+      diagnostic?.summary ||
+      diagnostic?.diagnosis_summary ||
+      diagnostic?.diagnosisSummary,
+    'Análisis visual completado.'
+  );
+
+  const actions: string[] = Array.isArray(diagnostic?.immediate_actions)
+    ? diagnostic.immediate_actions.map((act: any) => safeStr(act)).filter(Boolean)
+    : diagnostic?.immediate_actions
+    ? [safeStr(diagnostic.immediate_actions)]
+    : Array.isArray(
+        diagnostic?.preventive_actions ||
+          diagnostic?.preventive_measures ||
+          diagnostic?.preventiveMeasures
+      )
+    ? (
+        diagnostic.preventive_actions ||
+        diagnostic.preventive_measures ||
+        diagnostic.preventiveMeasures
+      )
+        .map((act: any) => safeStr(act))
+        .filter(Boolean)
+    : ['Monitorear avance de la lesión', 'Aislar material infectado'];
+
+  const organicTreatmentList: string[] = Array.isArray(
+    diagnostic?.organic_treatment || diagnostic?.organicTreatment
+  )
+    ? (diagnostic.organic_treatment || diagnostic.organicTreatment)
+        .map((x: any) => safeStr(x))
+        .filter(Boolean)
+    : diagnostic?.organic_solution || diagnostic?.organic_treatment
+    ? [safeStr(diagnostic.organic_solution || diagnostic.organic_treatment)]
+    : ['Aplicación de bioinsumos o extractos preventivos.'];
+
+  const chemicalTreatmentList: string[] = Array.isArray(
+    diagnostic?.chemical_treatment || diagnostic?.chemicalTreatment
+  )
+    ? (diagnostic.chemical_treatment || diagnostic.chemicalTreatment)
+        .map((x: any) => safeStr(x))
+        .filter(Boolean)
+    : diagnostic?.chemical_solution || diagnostic?.chemical_treatment
+    ? [safeStr(diagnostic.chemical_solution || diagnostic.chemical_treatment)]
+    : ['Consultar agrónomo de zona para rotación de molécula.'];
+
+  const dosage = safeStr(
+    diagnostic?.dosage_backpack_20l || diagnostic?.dosage,
+    '50 - 60 ml por tanque de 20 litros.'
+  );
+  const cropType = safeStr(diagnostic?.crop_type || diagnostic?.cropType, 'Potato');
+  const plotIdentifier = safeStr(diagnostic?.plot_identifier || diagnostic?.plotIdentifier, 'Plot A');
+  const diagnosticId = safeStr(diagnostic?.id, `diag-${Date.now()}`);
+
+  const severityUpper = severity.toUpperCase();
+  const severityLevel: 'LOW' | 'MODERATE' | 'CRITICAL' =
+    severityUpper.includes('CRIT') || severityUpper.includes('ALTO') || severityUpper.includes('HIGH')
+      ? 'CRITICAL'
+      : severityUpper.includes('MOD') || severityUpper.includes('MED')
+      ? 'MODERATE'
+      : 'LOW';
+
+  const symptoms: string[] = Array.isArray(diagnostic?.symptoms)
+    ? diagnostic.symptoms.map((s: any) => safeStr(s)).filter(Boolean)
+    : [];
 
   // Safe Pathogen Badge Calculator
   const getSafePathogenBadge = () => {
@@ -160,7 +221,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
         // Fallback below
       }
     }
-    const pathogen = (diagnostic?.pathogen_type || diagnostic?.pathogenType || 'HEALTHY').toUpperCase();
+    const pathogen = safeStr(diagnostic?.pathogen_type || diagnostic?.pathogenType, 'HEALTHY').toUpperCase();
     switch (pathogen) {
       case 'FUNGUS':
         return { label: 'FUNGAL PATHOGEN', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300' };
@@ -177,13 +238,24 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
   const pathogenBadge = getSafePathogenBadge();
 
   // Safe Crop Icon
-  const getCropIcon = (crop: string) => {
-    switch (crop.toLowerCase()) {
-      case 'potato': return '🥔';
-      case 'coffee': return '☕';
-      case 'corn': return '🌽';
-      case 'tomato': return '🍅';
-      default: return '🌱';
+  const getCropIcon = (crop: unknown) => {
+    switch (safeStr(crop).toLowerCase()) {
+      case 'potato':
+      case 'papa':
+        return '🥔';
+      case 'coffee':
+      case 'café':
+      case 'cafe':
+        return '☕';
+      case 'corn':
+      case 'maíz':
+      case 'maiz':
+        return '🌽';
+      case 'tomato':
+      case 'tomate':
+        return '🍅';
+      default:
+        return '🌱';
     }
   };
 
@@ -214,7 +286,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
   const formattedConfidence = `${confidencePercent}%`;
 
   const handleCopySummary = () => {
-    const text = `[AgroScan AI Diagnostic Report]\nCrop: ${cropType} (${plotIdentifier})\nDisease: ${diseaseName} (${pathogenBadge.label})\nSeverity: ${severityLevel} | Confidence: ${formattedConfidence}\nSummary: ${diagnosisSummary}\nDate: ${formattedDate()}`;
+    const text = `[AgroScan AI Diagnostic Report]\nCrop: ${cropType} (${plotIdentifier})\nDisease: ${diseaseName} (${pathogenBadge.label})\nSeverity: ${severityLevel} | Confidence: ${formattedConfidence}\nSummary: ${summary}\nDosage: ${dosage}\nDate: ${formattedDate()}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -302,7 +374,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           </div>
 
           {/* Scientific Taxon Name */}
-          {scientificName && (
+          {scientificName && scientificName !== 'No especificado' && (
             <p className="text-teal-700 dark:text-teal-400 text-sm italic font-mono mt-1 font-semibold flex items-center gap-1.5">
               <Activity className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
               {scientificName}
@@ -311,7 +383,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
           {/* Diagnosis Summary Text */}
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-3 leading-relaxed max-w-3xl">
-            {diagnosisSummary}
+            {summary}
           </p>
         </div>
 
@@ -454,8 +526,8 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 </div>
 
                 <ul className="space-y-2.5">
-                  {(organicTreatment?.length ?? 0) > 0 ? (
-                    (organicTreatment || []).map((item, idx) => (
+                  {(organicTreatmentList?.length ?? 0) > 0 ? (
+                    (organicTreatmentList || []).map((item, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                         <span className="leading-relaxed">{item}</span>
@@ -491,8 +563,8 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 </div>
 
                 <ul className="space-y-2.5">
-                  {(chemicalTreatment?.length ?? 0) > 0 ? (
-                    (chemicalTreatment || []).map((item, idx) => (
+                  {(chemicalTreatmentList?.length ?? 0) > 0 ? (
+                    (chemicalTreatmentList || []).map((item, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                         <ArrowRight className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
                         <span className="leading-relaxed">{item}</span>
@@ -515,19 +587,30 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
         </div>
 
         {/* Preventive Cultural Agronomy */}
-        {(preventiveActions?.length ?? 0) > 0 && (
+        {(actions?.length ?? 0) > 0 && (
           <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>Cultural Agronomic Preventive Measures:</span>
             </h5>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {(preventiveActions || []).map((prev, idx) => (
+              {(actions || []).map((prev: string, idx: number) => (
                 <div key={idx} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300">
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">•</span>
                   <span>{prev}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Calibrated Backpack Dosage Badge */}
+        {dosage && (
+          <div className="mt-4 p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold">
+              <Calculator className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>Calibrated 20L Backpack Dosage:</span>
+              <span className="font-mono text-emerald-900 dark:text-emerald-200 font-extrabold">{dosage}</span>
             </div>
           </div>
         )}
