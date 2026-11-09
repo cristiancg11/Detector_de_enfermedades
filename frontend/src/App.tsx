@@ -37,6 +37,8 @@ import { PlotHistoryDrawer } from './components/PlotHistoryDrawer';
 import { AuthModal } from './components/AuthModal';
 import { LoginPortal } from './components/LoginPortal';
 import { AgronomicChatModal } from './components/AgronomicChatModal';
+import { DosageCalculatorModal } from './components/DosageCalculatorModal';
+import { DosageCalculationRequest, DosagePrescription } from './models/DosagePrescription';
 
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => AuthSession.getUser());
@@ -52,6 +54,8 @@ export const App: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [chatReport, setChatReport] = useState<DiagnosticReport | null>(null);
+  const [isDosageOpen, setIsDosageOpen] = useState<boolean>(false);
+  const [dosageReport, setDosageReport] = useState<DiagnosticReport | null>(null);
   const [historyCount, setHistoryCount] = useState<number>(0);
   const [criticalCount, setCriticalCount] = useState<number>(0);
   const [monitoredPlotsCount, setMonitoredPlotsCount] = useState<number>(0);
@@ -136,6 +140,56 @@ export const App: React.FC = () => {
   const handleOpenChat = (reportToChat: DiagnosticReport) => {
     setChatReport(reportToChat);
     setIsChatOpen(true);
+  };
+
+  const handleOpenDosage = (reportToCalculate: DiagnosticReport) => {
+    setDosageReport(reportToCalculate);
+    setIsDosageOpen(true);
+  };
+
+  const handleCalculateDosage = async (
+    request: DosageCalculationRequest
+  ): Promise<DosagePrescription> => {
+    const token = AuthSession.getToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/v1/diagnose/${request.diagnostic_id}/dosage`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(request),
+          signal: AbortSignal.timeout(6000),
+        }
+      );
+
+      if (!response.ok) {
+        let errMessage = `Dosage API error (${response.status})`;
+        try {
+          const errData = await response.json();
+          errMessage = errData.detail || errMessage;
+        } catch {
+          // Fallback
+        }
+        throw new Error(errMessage);
+      }
+
+      const resData = await response.json();
+      return DosagePrescription.fromJSON(resData);
+    } catch (error: any) {
+      console.warn(
+        'Backend dosage API unreachable or timed out, activating local Andean agronomic calibration:',
+        error?.message
+      );
+      return DosagePrescription.calculateLocal(request);
+    }
   };
 
   // Main scan dispatcher with JWT authorization attached to requests
@@ -527,7 +581,11 @@ export const App: React.FC = () => {
           </div>
 
           {currentReport ? (
-            <DiagnosticCard report={currentReport} onOpenChat={handleOpenChat} />
+            <DiagnosticCard
+              report={currentReport}
+              onOpenChat={handleOpenChat}
+              onOpenDosageCalculator={handleOpenDosage}
+            />
           ) : (
             <div className="bg-white border border-slate-200/90 rounded-3xl p-12 text-center flex flex-col items-center shadow-card">
               <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-4 shadow-sm">
@@ -573,6 +631,18 @@ export const App: React.FC = () => {
           onClose={() => setIsChatOpen(false)}
           report={chatReport || currentReport!}
           currentUser={currentUser}
+        />
+      )}
+
+      {/* AI Backpack Sprayer Dosage Calculator Modal */}
+      {(dosageReport || currentReport) && (
+        <DosageCalculatorModal
+          isOpen={isDosageOpen}
+          onClose={() => setIsDosageOpen(false)}
+          diagnosticId={(dosageReport || currentReport)!.id}
+          cropType={(dosageReport || currentReport)!.cropType}
+          diseaseName={(dosageReport || currentReport)!.diseaseName}
+          onCalculate={handleCalculateDosage}
         />
       )}
 
