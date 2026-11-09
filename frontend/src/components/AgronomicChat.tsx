@@ -18,7 +18,6 @@ import {
   VolumeX,
   AlertCircle,
   Loader2,
-  RefreshCw,
 } from 'lucide-react';
 import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
 import { useLanguage } from '../context/LanguageContext';
@@ -54,7 +53,6 @@ export const AgronomicChat: React.FC<AgronomicChatProps> = ({
   currentUser,
   onClose,
   className = '',
-  isEmbedded = false,
 }) => {
   const { language } = useLanguage();
   const isSpanish = language !== 'en';
@@ -84,7 +82,6 @@ export const AgronomicChat: React.FC<AgronomicChatProps> = ({
     stopSpeaking,
     isRecognitionSupported,
     isSynthesisSupported,
-    recognitionError,
   } = useVoiceAssistant();
 
   // Seed initial greeting message
@@ -276,14 +273,14 @@ export const AgronomicChat: React.FC<AgronomicChatProps> = ({
                     : 'bg-slate-100 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 rounded-tl-xs border border-slate-200 dark:border-slate-700'
                 }`}
               >
-                <p className="whitespace-pre-line">{msg.text}</p>
+                <p className="whitespace-pre-line">{msg.content}</p>
 
                 {/* Speaker TTS Read Aloud Icon on Bot Messages */}
                 {!isUser && isSynthesisSupported && (
                   <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                     <button
                       type="button"
-                      onClick={() => handleReadMessage(msg.text, idx)}
+                      onClick={() => handleReadMessage(msg.content, idx)}
                       className="inline-flex items-center gap-1.5 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium"
                       title={isMsgSpeaking ? 'Detener lectura' : 'Escuchar respuesta'}
                     >
@@ -302,7 +299,7 @@ export const AgronomicChat: React.FC<AgronomicChatProps> = ({
                       )}
                     </button>
                     <span className="font-mono text-[10px] text-slate-400">
-                      {msg.formattedTime ? msg.formattedTime() : ''}
+                      {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                     </span>
                   </div>
                 )}

@@ -19,8 +19,6 @@ import {
   Sprout,
   Mic,
   MicOff,
-  Volume2,
-  VolumeX,
 } from 'lucide-react';
 import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
 import { DiagnosticReport } from '../models/DiagnosticReport';

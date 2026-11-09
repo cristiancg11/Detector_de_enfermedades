@@ -10,14 +10,11 @@ import {
   Mic,
   MicOff,
   Camera,
-  Upload,
   MapPin,
-  Sparkles,
   FileText,
   AlertCircle,
   CheckCircle2,
   Layers,
-  Cpu,
   Trash2,
 } from 'lucide-react';
 import { CropType } from '../types';
@@ -62,7 +59,6 @@ export const DiagnosticForm: React.FC<DiagnosticFormProps> = ({
     stopListening,
     clearTranscript,
     isRecognitionSupported,
-    recognitionError,
   } = useVoiceAssistant();
 
   // Append voice transcript to field notes
