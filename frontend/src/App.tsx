@@ -21,7 +21,6 @@ import {
   BarChart3,
   ArrowUpRight,
   ShieldAlert,
-  Sprout,
   Sparkles
 } from 'lucide-react';
 import { CropType, UserProfile } from './types';
@@ -38,6 +37,7 @@ import { AgronomicChatModal } from './components/AgronomicChatModal';
 import { DosageCalculatorModal } from './components/DosageCalculatorModal';
 import { DosageCalculationRequest, DosagePrescription } from './models/DosagePrescription';
 import { AuthGate } from './components/AuthGate';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => AuthSession.getUser());
@@ -48,6 +48,7 @@ export const App: React.FC = () => {
   });
   const [currentReport, setCurrentReport] = useState<DiagnosticReport | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [diagnosticError, setDiagnosticError] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
@@ -211,6 +212,7 @@ export const App: React.FC = () => {
     previewUrl: string
   ) => {
     setIsAnalyzing(true);
+    setDiagnosticError(null);
 
     try {
       // 1. Dispatch authenticated request to FastAPI backend (saved into MongoDB Atlas with Bearer token)
@@ -219,6 +221,7 @@ export const App: React.FC = () => {
       // 2. Persist into localStorage via OOP FarmPlotHistoryManager
       FarmPlotHistoryManager.saveReport(report);
       setCurrentReport(report);
+      setDiagnosticError(null);
       refreshMetrics();
 
       // 3. Smooth scroll to report
@@ -227,6 +230,7 @@ export const App: React.FC = () => {
       }, 150);
     } catch (err: any) {
       console.warn('API diagnostic submission notice:', err?.message);
+      setDiagnosticError('Diagnostic service error: please verify backend connection');
 
       // High-fidelity fallback for offline resilient evaluation
       const fallbackReport = DiagnosticReport.fromJSON(
@@ -275,7 +279,8 @@ export const App: React.FC = () => {
 
   return (
     <AuthGate>
-      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden">
+      <ErrorBoundary>
+        <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden">
         {/* Top Navbar Header */}
         <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/90 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
@@ -574,25 +579,39 @@ export const App: React.FC = () => {
             )}
           </div>
 
-          {currentReport ? (
+          {/* Diagnostic Alert Banner on Backend Service Warning */}
+          {diagnosticError && (
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center justify-between shadow-sm animate-in fade-in duration-200">
+              <div className="flex items-center gap-3">
+                <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-amber-900">
+                    {diagnosticError}
+                  </p>
+                  <p className="text-[11px] text-amber-700">
+                    Displaying calibrated offline Andean diagnostic preview while backend re-establishes connectivity.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDiagnosticError(null)}
+                className="text-xs text-amber-700 hover:text-amber-900 font-bold px-2 py-1 rounded-lg hover:bg-amber-100/50 transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          <ErrorBoundary>
             <DiagnosticCard
               report={currentReport}
+              isLoading={isAnalyzing}
+              error={diagnosticError}
               onOpenChat={handleOpenChat}
               onOpenDosageCalculator={handleOpenDosage}
             />
-          ) : (
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-12 text-center flex flex-col items-center shadow-card">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-4 shadow-sm">
-                <Sprout className="w-8 h-8" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900">
-                Ready for Andean Crop Health Diagnostic
-              </h3>
-              <p className="text-xs text-slate-500 max-w-md mt-1">
-                Select your crop, designate the farm plot or lot, and upload a leaf photo to trigger Gemini 2.5 Flash analysis with MongoDB Atlas persistence.
-              </p>
-            </div>
-          )}
+          </ErrorBoundary>
         </section>
       </main>
 
@@ -658,6 +677,7 @@ export const App: React.FC = () => {
         </div>
       </footer>
       </div>
+      </ErrorBoundary>
     </AuthGate>
   );
 };
