@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { DiagnosticReport } from '../models/DiagnosticReport';
 import { DosageCalculatorModal } from './DosageCalculatorModal';
+import { VoiceNarrationButton } from './VoiceNarrationButton';
 
 interface DiagnosticCardProps {
   report?: DiagnosticReport | any | null;
@@ -283,10 +284,13 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
             </span>
           </div>
 
-          {/* Disease Common Name */}
-          <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <span>{diseaseName}</span>
-          </h3>
+          {/* Disease Common Name & Audio Narration Widget */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <span>{diseaseName}</span>
+            </h3>
+            <VoiceNarrationButton report={diagnostic} />
+          </div>
 
           {/* Scientific Taxon Name */}
           {scientificName && (
