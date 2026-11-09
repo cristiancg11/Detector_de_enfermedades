@@ -16,8 +16,13 @@ import {
   RefreshCw,
   MapPin,
   AlertCircle,
-  Sprout
+  Sprout,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
 import { DiagnosticReport } from '../models/DiagnosticReport';
 import { AgronomicChatThread } from '../models/AgronomicChatThread';
 import { ApiService } from '../services/apiService';
@@ -49,6 +54,21 @@ export const AgronomicChatModal: React.FC<AgronomicChatModalProps> = ({
   const [inputValue, setInputValue] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const {
+    isListening,
+    transcript,
+    startListening,
+    stopListening,
+    isRecognitionSupported,
+  } = useVoiceAssistant();
+
+  // Append transcribed text
+  useEffect(() => {
+    if (transcript) {
+      setInputValue(transcript);
+    }
+  }, [transcript]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -267,7 +287,49 @@ export const AgronomicChatModal: React.FC<AgronomicChatModalProps> = ({
 
         {/* Input Bar */}
         <div className="p-4 border-t border-slate-200 bg-white">
+          {/* Pulsing Recording Indicator */}
+          {isListening && (
+            <div className="mb-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-300 text-rose-700 text-xs font-bold flex items-center justify-between animate-pulse">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping" />
+                <span>Escuchando tu consulta... (Listening...)</span>
+              </div>
+              <button
+                type="button"
+                onClick={stopListening}
+                className="text-[11px] underline text-rose-800 font-bold"
+              >
+                Listo / Submit
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center gap-2">
+            {isRecognitionSupported && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (isListening) {
+                    stopListening();
+                  } else {
+                    startListening((res) => {
+                      if (res) {
+                        setInputValue(res);
+                      }
+                    });
+                  }
+                }}
+                className={`p-2.5 rounded-xl transition-all shadow-xs active:scale-95 shrink-0 ${
+                  isListening
+                    ? 'bg-rose-600 text-white ring-4 ring-rose-500/20 animate-bounce'
+                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300'
+                }`}
+                title={isListening ? 'Stop listening' : 'Dictate question by voice'}
+              >
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+            )}
+
             <input
               ref={inputRef}
               type="text"
@@ -275,7 +337,7 @@ export const AgronomicChatModal: React.FC<AgronomicChatModalProps> = ({
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
-              placeholder="Ask dosage, rain fastness, organic broths..."
+              placeholder={isListening ? 'Listening now...' : 'Ask dosage, rain fastness, organic broths...'}
               className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600 transition-colors shadow-inner"
             />
             <button

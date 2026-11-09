@@ -18,10 +18,14 @@ import {
   Sparkles,
   MapPin,
   Clock,
-  Gauge
+  Gauge,
+  Mic,
+  MicOff,
+  FileText,
 } from 'lucide-react';
 import { CropType, WorkerProcessRequest, WorkerProcessResponse } from '../types';
 import { CropDiagnosticRequest } from '../models/CropDiagnosticRequest';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
 
 interface CropScannerProps {
   onScanRequest: (request: CropDiagnosticRequest, previewUrl: string) => void;
@@ -95,6 +99,27 @@ export const CropScanner: React.FC<CropScannerProps> = ({
   const [workerMetrics, setWorkerMetrics] = useState<WorkerProcessResponse | null>(null);
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [fieldNotes, setFieldNotes] = useState<string>('');
+
+  const {
+    isListening,
+    transcript,
+    startListening,
+    stopListening,
+    clearTranscript,
+    isRecognitionSupported,
+  } = useVoiceAssistant();
+
+  // Append transcribed speech to field notes
+  useEffect(() => {
+    if (transcript) {
+      setFieldNotes((prev) => {
+        const separator = prev.trim() ? ' ' : '';
+        return `${prev.trim()}${separator}${transcript.trim()}`;
+      });
+      clearTranscript();
+    }
+  }, [transcript, clearTranscript]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -381,10 +406,64 @@ export const CropScanner: React.FC<CropScannerProps> = ({
         </div>
       </div>
 
+      {/* Field Notes / Observaciones de Campo with Voice Dictation */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>3. Field Observations / Notas de Voz</span>
+          </label>
+          {isRecognitionSupported && (
+            <button
+              type="button"
+              onClick={() => {
+                if (isListening) {
+                  stopListening();
+                } else {
+                  startListening();
+                }
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all shadow-xs active:scale-95 ${
+                isListening
+                  ? 'bg-rose-600 text-white ring-4 ring-rose-500/20 animate-pulse'
+                  : 'bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+              }`}
+            >
+              {isListening ? (
+                <>
+                  <MicOff className="w-3.5 h-3.5" />
+                  <span>Detener Micrófono</span>
+                </>
+              ) : (
+                <>
+                  <Mic className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>Dictar por Voz (Mic)</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+
+        {isListening && (
+          <div className="mb-2 p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-medium flex items-center gap-2 animate-pulse">
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping" />
+            <span>🎙️ Escuchando observaciones de campo... (Habla síntomas como manchas o marchitez)</span>
+          </div>
+        )}
+
+        <textarea
+          rows={2}
+          value={fieldNotes}
+          onChange={(e) => setFieldNotes(e.target.value)}
+          placeholder="Dicte o escriba observaciones visibles de campo (ej. manchas circulares amarillas, marchitez, presencia de insectos)..."
+          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 transition-colors shadow-inner"
+        />
+      </div>
+
       {/* Image Upload / Capture Area */}
       <div className="mb-6">
         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-          3. Upload or Capture Plant Photo
+          4. Upload or Capture Plant Photo
         </label>
 
         <div
