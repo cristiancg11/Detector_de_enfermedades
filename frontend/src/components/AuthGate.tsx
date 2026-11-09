@@ -2,7 +2,8 @@
  * AgroScan AI - Fullscreen Mandatory Auth Gate / Route Guard Component.
  *
  * Prevents unauthenticated access to the phytosanitary dashboard, diagnostic scanner,
- * and parcel history. Renders an undismissable glassmorphic authentication gateway.
+ * and parcel history. Binds directly to the FastAPI JWT authentication endpoints
+ * (/login & /register) with responsive error toasts, loading spinners, and session persistence.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -19,12 +20,16 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
+  Loader2,
 } from 'lucide-react';
 import { AuthSession } from '../models/AuthSession';
+import { UserProfile } from '../types';
 
 interface AuthGateProps {
   children: React.ReactNode;
 }
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() =>
@@ -58,8 +63,15 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
   // Handle fast Andean demo profile selection
   const handleSelectDemo = (demoEmail: string) => {
     setErrorMessage(null);
-    const session = AuthSession.loginAsDemo(demoEmail);
-    setSuccessMessage(`Welcome back, ${session.user.fullName}! Entering dashboard...`);
+    setIsLoading(true);
+    try {
+      const session = AuthSession.loginAsDemo(demoEmail);
+      setSuccessMessage(`Welcome back, ${session.user.fullName}! Entering dashboard...`);
+    } catch {
+      setErrorMessage('Could not load demo profile.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleModeSwitch = (newMode: 'login' | 'register') => {
@@ -70,19 +82,164 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setErrorMessage(null);
     setSuccessMessage(null);
+    setIsLoading(true);
 
-    // Initial placeholder submit for step 2 base component
-    setTimeout(() => {
-      if (mode === 'login' && !email.trim()) {
-        setErrorMessage('Please enter your email address.');
-        setIsLoading(false);
-        return;
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    try {
+      if (mode === 'login') {
+        if (!cleanEmail || !cleanPassword) {
+          throw new Error('Please enter both your email address and password.');
+        }
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({
+              email: cleanEmail,
+              password: cleanPassword,
+            }),
+          });
+
+          if (!response.ok) {
+            let errorText = 'Invalid email or password.';
+            try {
+              const resJson = await response.json();
+              errorText = resJson.detail || errorText;
+            } catch {
+              // Ignore json parse error
+            }
+            throw new Error(errorText);
+          }
+
+          const authData = await response.json();
+          const userProfile: UserProfile = {
+            id: authData.user?.id || `usr-${Date.now()}`,
+            email: authData.user?.email || cleanEmail,
+            fullName: authData.user?.full_name || authData.user?.fullName || 'Registered Farmer',
+            farmName: authData.user?.farm_name || authData.user?.farmName || 'Andean Highland Plot',
+            municipality: authData.user?.municipality || 'Túquerres (Plateau - 3,100m)',
+            role: authData.user?.role || 'Smallholder Farmer',
+            avatarUrl:
+              authData.user?.avatar_url ||
+              `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanEmail}`,
+            createdAt: authData.user?.created_at || new Date().toISOString(),
+          };
+
+          const token = authData.access_token || authData.token || `token-${Date.now()}`;
+          setSuccessMessage('Authentication successful! Loading your Andean farm parcels...');
+          setTimeout(() => {
+            AuthSession.saveSession(token, userProfile);
+          }, 350);
+        } catch (apiErr: any) {
+          // Check for Andean demo account fallback
+          const demo = AuthSession.DEMO_PROFILES.find(
+            (p) => p.email.toLowerCase() === cleanEmail
+          );
+          if (demo) {
+            const session = AuthSession.loginAsDemo(demo.email);
+            setSuccessMessage(`Welcome back, ${session.user.fullName}! Entering dashboard...`);
+            return;
+          }
+          throw apiErr;
+        }
+      } else {
+        // Register Farm Mode
+        if (!fullName.trim() || !farmName.trim() || !cleanEmail || !cleanPassword) {
+          throw new Error('Please fill in all mandatory registration fields.');
+        }
+
+        if (cleanPassword.length < 6) {
+          throw new Error('Password must be at least 6 characters long.');
+        }
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({
+              email: cleanEmail,
+              password: cleanPassword,
+              full_name: fullName.trim(),
+              farm_name: farmName.trim(),
+              municipality: 'Túquerres (High Plateau - 3,100m)',
+              role: 'Smallholder Farmer',
+            }),
+          });
+
+          if (!response.ok) {
+            let errorText = 'Registration could not be completed.';
+            try {
+              const resJson = await response.json();
+              errorText = resJson.detail || errorText;
+            } catch {
+              // Ignore json parse error
+            }
+            throw new Error(errorText);
+          }
+
+          const authData = await response.json();
+          const userProfile: UserProfile = {
+            id: authData.user?.id || `usr-${Date.now()}`,
+            email: authData.user?.email || cleanEmail,
+            fullName: authData.user?.full_name || fullName.trim(),
+            farmName: authData.user?.farm_name || farmName.trim(),
+            municipality: authData.user?.municipality || 'Túquerres (High Plateau - 3,100m)',
+            role: authData.user?.role || 'Smallholder Farmer',
+            avatarUrl:
+              authData.user?.avatar_url ||
+              `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanEmail}`,
+            createdAt: authData.user?.created_at || new Date().toISOString(),
+          };
+
+          const token = authData.access_token || authData.token || `token-${Date.now()}`;
+          setSuccessMessage('Farm registered successfully! Access granted.');
+          setTimeout(() => {
+            AuthSession.saveSession(token, userProfile);
+          }, 350);
+        } catch (apiErr: any) {
+          // Resilient offline registration if backend server is unreachable
+          if (
+            apiErr?.message?.includes('Failed to fetch') ||
+            apiErr?.message?.includes('NetworkError') ||
+            apiErr?.message?.includes('Load failed')
+          ) {
+            const fallbackUser: UserProfile = {
+              id: `usr-${Date.now()}`,
+              email: cleanEmail,
+              fullName: fullName.trim(),
+              farmName: farmName.trim(),
+              municipality: 'Túquerres (Plateau - 3,100m)',
+              role: 'Smallholder Farmer',
+              avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanEmail}`,
+              createdAt: new Date().toISOString(),
+            };
+            const fallbackToken = `offline-jwt-${Date.now()}`;
+            setSuccessMessage('Account registered locally! Offline mode active.');
+            setTimeout(() => {
+              AuthSession.saveSession(fallbackToken, fallbackUser);
+            }, 350);
+            return;
+          }
+
+          throw apiErr;
+        }
       }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Authentication failed. Please verify your credentials.');
+    } finally {
       setIsLoading(false);
-    }, 400);
+    }
   };
 
   return (
@@ -184,20 +341,20 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
 
         {/* Feedback Alerts */}
         {errorMessage && (
-          <div className="mt-4 p-3 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex items-center gap-2">
+          <div className="mt-4 p-3.5 rounded-xl bg-rose-950/50 border border-rose-800/80 text-rose-300 text-xs flex items-center gap-2.5 animate-in fade-in duration-200">
             <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>{errorMessage}</span>
+            <span className="leading-tight">{errorMessage}</span>
           </div>
         )}
 
         {successMessage && (
-          <div className="mt-4 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 text-xs flex items-center gap-2">
+          <div className="mt-4 p-3.5 rounded-xl bg-emerald-950/50 border border-emerald-800/80 text-emerald-300 text-xs flex items-center gap-2.5 animate-in fade-in duration-200">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{successMessage}</span>
+            <span className="leading-tight">{successMessage}</span>
           </div>
         )}
 
-        {/* Form Skeleton */}
+        {/* Authentication Form */}
         <form onSubmit={handleFormSubmit} className="mt-5 space-y-4">
           {mode === 'register' && (
             <>
@@ -213,7 +370,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="e.g. Mateo Narváez"
-                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
                   />
                 </div>
               </div>
@@ -230,7 +387,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
                     value={farmName}
                     onChange={(e) => setFarmName(e.target.value)}
                     placeholder="e.g. Finca La Cumbre"
-                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
                   />
                 </div>
               </div>
@@ -249,7 +406,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="farmer@agroscan.co"
-                className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
               />
             </div>
           </div>
@@ -266,12 +423,12 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={mode === 'register' ? 'Minimum 6 characters' : 'Enter your password'}
-                className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -284,7 +441,10 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
             className="w-full mt-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-bold text-xs transition-all shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isLoading ? (
-              <span>Authenticating...</span>
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Authenticating with Andean Cloud...</span>
+              </span>
             ) : (
               <>
                 <span>{mode === 'login' ? 'Sign In to Farm' : 'Register Farm Account'}</span>
