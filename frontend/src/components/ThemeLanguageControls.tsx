@@ -19,7 +19,7 @@ export const ThemeLanguageControls: React.FC<ThemeLanguageControlsProps> = ({
   className = '',
   showLabels = false,
 }) => {
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { toggleTheme, isDark } = useTheme();
   const { language, toggleLanguage, t } = useLanguage();
 
   return (
