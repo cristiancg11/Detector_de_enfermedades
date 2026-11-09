@@ -281,402 +281,372 @@ export const App: React.FC = () => {
     <AuthGate>
       <ErrorBoundary>
         <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden">
-        {/* Top Navbar Header */}
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/90 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-            {/* Brand Logo & Andean Subtitle */}
-            <div className="flex items-center gap-3.5 shrink-0">
-              <div className="w-11 h-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-emerald-soft">
-                <Leaf className="w-6 h-6" />
+          {/* Top Navbar Header */}
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/90 shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+              {/* Brand Logo & Andean Subtitle */}
+              <div className="flex items-center gap-3.5 shrink-0">
+                <div className="w-11 h-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-emerald-soft">
+                  <Leaf className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                      AgroScan<span className="text-emerald-600">.AI</span>
+                    </h1>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold tracking-wider uppercase">
+                      Atlas v2.0
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
+                    <MapPin className="w-3 h-3 text-emerald-600" />
+                    Nariño Andean Highlands • Phytosanitary AI
+                  </p>
+                </div>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    AgroScan<span className="text-emerald-600">.AI</span>
-                  </h1>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold tracking-wider uppercase">
-                    Atlas v2.0
+
+              {/* Right Header Controls */}
+              <div className="flex items-center gap-3">
+                {/* MongoDB Atlas & AI Engine Live Status Pill */}
+                <div className="hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs shadow-sm">
+                  <span
+                    className={`w-2 h-2 rounded-full ${backendStatus.gemini_configured
+                        ? 'bg-emerald-500'
+                        : 'bg-amber-500'
+                      } animate-pulse`}
+                  />
+                  <span className="text-slate-700 font-mono text-[11px]">
+                    {backendStatus.model || 'Gemini 2.5 Flash'}
+                  </span>
+                  <span className="text-slate-300">|</span>
+                  <span className="flex items-center gap-1 text-[11px] text-emerald-700 font-mono font-medium">
+                    <Database className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>MongoDB Atlas {backendStatus.mongodb_connected ? '(Live)' : '(Synced)'}</span>
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
-                  <MapPin className="w-3 h-3 text-emerald-600" />
-                  Nariño Andean Highlands • Phytosanitary AI
-                </p>
+
+                {/* Logged-In Farmer User Profile Badge & Functional Log Out Button */}
+                {currentUser && (
+                  <div className="flex items-center gap-2.5 p-1.5 pl-2.5 pr-2 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition-all shadow-sm">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 font-bold text-xs shrink-0 overflow-hidden">
+                      {currentUser.avatarUrl ? (
+                        <img
+                          src={currentUser.avatarUrl}
+                          alt={currentUser.fullName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{currentUser.fullName.slice(0, 2).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="hidden sm:block text-left leading-tight">
+                      <p className="text-xs font-bold text-slate-900 truncate max-w-[130px]">
+                        {currentUser.fullName}
+                      </p>
+                      <p className="text-[10px] text-emerald-700 font-medium truncate max-w-[130px]">
+                        {currentUser.farmName}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      title="Log Out of Session"
+                      className="ml-1 px-2 py-1.5 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all flex items-center gap-1 font-semibold text-xs"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span className="hidden md:inline">Log Out</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* History Drawer Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsDrawerOpen(true)}
+                  className="relative inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition-all hover:border-emerald-300 active:scale-95 shadow-sm"
+                >
+                  <History className="w-4 h-4 text-emerald-600" />
+                  <span className="hidden sm:inline">Farm Plots</span>
+                  {historyCount > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-[11px] flex items-center justify-center">
+                      {historyCount}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
+          </header>
 
-            {/* Right Header Controls */}
-            <div className="flex items-center gap-3">
-              {/* MongoDB Atlas & AI Engine Live Status Pill */}
-              <div className="hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs shadow-sm">
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    backendStatus.gemini_configured
-                      ? 'bg-emerald-500'
-                      : 'bg-amber-500'
-                  } animate-pulse`}
-                />
-                <span className="text-slate-700 font-mono text-[11px]">
-                  {backendStatus.model || 'Gemini 2.5 Flash'}
-                </span>
-                <span className="text-slate-300">|</span>
-                <span className="flex items-center gap-1 text-[11px] text-emerald-700 font-mono font-medium">
-                  <Database className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>MongoDB Atlas {backendStatus.mongodb_connected ? '(Live)' : '(Synced)'}</span>
-                </span>
-              </div>
-
-              {/* Logged-In Farmer User Profile Badge & Functional Log Out Button */}
-              {currentUser && (
-                <div className="flex items-center gap-2.5 p-1.5 pl-2.5 pr-2 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition-all shadow-sm">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 font-bold text-xs shrink-0 overflow-hidden">
-                    {currentUser.avatarUrl ? (
-                      <img
-                        src={currentUser.avatarUrl}
-                        alt={currentUser.fullName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span>{currentUser.fullName.slice(0, 2).toUpperCase()}</span>
-                    )}
+          {/* Main Bento Grid Dashboard Content */}
+          <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8 z-10 w-full">
+            {/* Active Farmer Profile Banner */}
+            {currentUser && (
+              <div className="p-4 sm:p-5 rounded-3xl bg-white border border-slate-200/90 shadow-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0 shadow-sm">
+                    <Trees className="w-6 h-6" />
                   </div>
-                  <div className="hidden sm:block text-left leading-tight">
-                    <p className="text-xs font-bold text-slate-900 truncate max-w-[130px]">
-                      {currentUser.fullName}
-                    </p>
-                    <p className="text-[10px] text-emerald-700 font-medium truncate max-w-[130px]">
-                      {currentUser.farmName}
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-semibold text-slate-500">Active Parcel Session:</span>
+                      <span className="text-sm font-black text-slate-900">{currentUser.farmName}</span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200">
+                        {currentUser.municipality || 'Nariño Highlands'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Farmer: <strong className="text-slate-900">{currentUser.fullName}</strong> • Role:{' '}
+                      <span className="text-emerald-700 font-semibold">{currentUser.role || 'Smallholder Farmer'}</span>
                     </p>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => setIsAuthOpen(true)}
+                    className="text-xs font-bold text-slate-600 hover:text-emerald-700 flex items-center gap-1 transition-colors px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Switch Account</span>
+                  </button>
                   <button
                     type="button"
                     onClick={handleLogout}
-                    title="Log Out of Session"
-                    className="ml-1 px-2 py-1.5 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all flex items-center gap-1 font-semibold text-xs"
+                    className="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 transition-colors px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    <span className="hidden md:inline">Log Out</span>
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* BENTO GRID: Quick Overview Metrics (Row 1) */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Bento Tile 1: Total Scans */}
+              <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Total Crop Scans
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
+                    <BarChart3 className="w-4 h-4" />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-slate-900 font-mono">{historyCount}</span>
+                    <span className="text-xs text-emerald-700 font-bold flex items-center gap-0.5">
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                      Atlas Synced
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">Phytosanitary reports on record</p>
+                </div>
+              </div>
+
+              {/* Bento Tile 2: Critical Plots Alert */}
+              <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Critical Plots Alert
+                  </span>
+                  <div
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${criticalCount > 0
+                        ? 'bg-rose-50 border border-rose-200 text-rose-600 animate-pulse'
+                        : 'bg-emerald-50 border border-emerald-200 text-emerald-600'
+                      }`}
+                  >
+                    <ShieldAlert className="w-4 h-4" />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-slate-900 font-mono">{criticalCount}</span>
+                    <span
+                      className={`text-xs font-bold ${criticalCount > 0 ? 'text-rose-600' : 'text-emerald-700'
+                        }`}
+                    >
+                      {criticalCount > 0 ? 'Urgent Treatment' : 'All Plots Safe'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    {criticalCount > 0
+                      ? 'Fungal or bacterial outbreaks detected'
+                      : 'Zero high-severity outbreaks active'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Bento Tile 3: Monitored Plots Overview */}
+              <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Monitored Lots
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 group-hover:scale-105 transition-transform">
+                    <Trees className="w-4 h-4" />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-slate-900 font-mono">
+                      {monitoredPlotsCount}
+                    </span>
+                    <span className="text-xs text-sky-700 font-bold">Parcels Mapped</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">Indexed by farm plot identifier</p>
+                </div>
+              </div>
+
+              {/* Bento Tile 4: High-Tech Processing Engine */}
+              <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Off-Thread Engine
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-600 group-hover:scale-105 transition-transform">
+                    <Cpu className="w-4 h-4" />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-base font-black text-slate-900">OffscreenCanvas</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Zero UI lockup on high-resolution leaf photos
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* BENTO GRID: Scanning Zone (Row 2) */}
+            <section>
+              <CropScanner
+                selectedCrop={selectedCrop}
+                onCropChange={setSelectedCrop}
+                plotIdentifier={plotIdentifier}
+                onPlotChange={setPlotIdentifier}
+                onScanRequest={handleScanRequest}
+                isAnalyzing={isAnalyzing}
+              />
+            </section>
+
+            {/* BENTO GRID: Split-Screen Interactive Diagnostic Results (Row 3) */}
+            <section ref={diagnosticRef} className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    Phytosanitary Assessment Report
+                  </h2>
+                </div>
+                {currentReport && (
+                  <span className="text-xs text-emerald-800 font-mono font-bold bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 shadow-sm">
+                    Plot: {currentReport.plotIdentifier}
+                  </span>
+                )}
+              </div>
+
+              {/* Diagnostic Alert Banner on Backend Service Warning */}
+              {diagnosticError && (
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center justify-between shadow-sm animate-in fade-in duration-200">
+                  <div className="flex items-center gap-3">
+                    <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-amber-900">
+                        {diagnosticError}
+                      </p>
+                      <p className="text-[11px] text-amber-700">
+                        Displaying calibrated offline Andean diagnostic preview while backend re-establishes connectivity.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDiagnosticError(null)}
+                    className="text-xs text-amber-700 hover:text-amber-900 font-bold px-2 py-1 rounded-lg hover:bg-amber-100/50 transition-colors"
+                  >
+                    Dismiss
                   </button>
                 </div>
               )}
 
-            {/* History Drawer Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setIsDrawerOpen(true)}
-              className="relative inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition-all hover:border-emerald-300 active:scale-95 shadow-sm"
-            >
-              <History className="w-4 h-4 text-emerald-600" />
-              <span className="hidden sm:inline">Farm Plots</span>
-              {historyCount > 0 && (
-                <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-[11px] flex items-center justify-center">
-                  {historyCount}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
+              <ErrorBoundary>
+                <DiagnosticCard
+                  report={currentReport}
+                  isLoading={isAnalyzing}
+                  error={diagnosticError}
+                  onOpenChat={handleOpenChat}
+                  onOpenDosageCalculator={handleOpenDosage}
+                />
+              </ErrorBoundary>
+            </section>
+          </main>
 
-      {/* Main Bento Grid Dashboard Content */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8 z-10 w-full">
-        {/* Active Farmer Profile Banner OR Guest Warning Banner */}
-        {currentUser ? (
-          <div className="p-4 sm:p-5 rounded-3xl bg-white border border-slate-200/90 shadow-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0 shadow-sm">
-                <Trees className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold text-slate-500">Active Parcel Session:</span>
-                  <span className="text-sm font-black text-slate-900">{currentUser.farmName}</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200">
-                    {currentUser.municipality || 'Nariño Highlands'}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Farmer: <strong className="text-slate-900">{currentUser.fullName}</strong> • Role:{' '}
-                  <span className="text-emerald-700 font-semibold">{currentUser.role || 'Smallholder Farmer'}</span>
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setIsAuthOpen(true)}
-                className="text-xs font-bold text-slate-600 hover:text-emerald-700 flex items-center gap-1 transition-colors px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50"
-              >
-                <User className="w-3.5 h-3.5" />
-                <span>Switch Account</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 transition-colors px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="p-5 rounded-3xl bg-emerald-50/70 border border-emerald-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                  <span>Guest Preview Mode</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                    MongoDB Atlas Connected
-                  </span>
-                </h3>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Sign in or register your farm parcel to save diagnoses, track plot history, and attach your JWT token to all requests.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsAuthOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-emerald-soft active:scale-95 shrink-0"
-            >
-              Sign In / Register Farm
-            </button>
-          </div>
-        )}
-
-        {/* BENTO GRID: Quick Overview Metrics (Row 1) */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Bento Tile 1: Total Scans */}
-          <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Total Crop Scans
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
-                <BarChart3 className="w-4 h-4" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900 font-mono">{historyCount}</span>
-                <span className="text-xs text-emerald-700 font-bold flex items-center gap-0.5">
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                  Atlas Synced
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">Phytosanitary reports on record</p>
-            </div>
-          </div>
-
-          {/* Bento Tile 2: Critical Plots Alert */}
-          <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Critical Plots Alert
-              </span>
-              <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${
-                  criticalCount > 0
-                    ? 'bg-rose-50 border border-rose-200 text-rose-600 animate-pulse'
-                    : 'bg-emerald-50 border border-emerald-200 text-emerald-600'
-                }`}
-              >
-                <ShieldAlert className="w-4 h-4" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900 font-mono">{criticalCount}</span>
-                <span
-                  className={`text-xs font-bold ${
-                    criticalCount > 0 ? 'text-rose-600' : 'text-emerald-700'
-                  }`}
-                >
-                  {criticalCount > 0 ? 'Urgent Treatment' : 'All Plots Safe'}
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">
-                {criticalCount > 0
-                  ? 'Fungal or bacterial outbreaks detected'
-                  : 'Zero high-severity outbreaks active'}
-              </p>
-            </div>
-          </div>
-
-          {/* Bento Tile 3: Monitored Plots Overview */}
-          <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Monitored Lots
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 group-hover:scale-105 transition-transform">
-                <Trees className="w-4 h-4" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900 font-mono">
-                  {monitoredPlotsCount}
-                </span>
-                <span className="text-xs text-sky-700 font-bold">Parcels Mapped</span>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">Indexed by farm plot identifier</p>
-            </div>
-          </div>
-
-          {/* Bento Tile 4: High-Tech Processing Engine */}
-          <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Off-Thread Engine
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-600 group-hover:scale-105 transition-transform">
-                <Cpu className="w-4 h-4" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-base font-black text-slate-900">OffscreenCanvas</span>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">
-                Zero UI lockup on high-resolution leaf photos
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* BENTO GRID: Scanning Zone (Row 2) */}
-        <section>
-          <CropScanner
-            selectedCrop={selectedCrop}
-            onCropChange={setSelectedCrop}
-            plotIdentifier={plotIdentifier}
-            onPlotChange={setPlotIdentifier}
-            onScanRequest={handleScanRequest}
-            isAnalyzing={isAnalyzing}
+          {/* History Drawer Sidebar Modal */}
+          <PlotHistoryDrawer
+            isOpen={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+            onSelectReport={(report) => {
+              setCurrentReport(report);
+              setSelectedCrop(report.cropType);
+              setPlotIdentifier(report.plotIdentifier);
+              setTimeout(() => {
+                diagnosticRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }}
+            onReportsUpdated={refreshMetrics}
           />
-        </section>
 
-        {/* BENTO GRID: Split-Screen Interactive Diagnostic Results (Row 3) */}
-        <section ref={diagnosticRef} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Phytosanitary Assessment Report
-              </h2>
-            </div>
-            {currentReport && (
-              <span className="text-xs text-emerald-800 font-mono font-bold bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 shadow-sm">
-                Plot: {currentReport.plotIdentifier}
-              </span>
-            )}
-          </div>
+          {/* Glassmorphic Farmer Authentication Modal */}
+          <AuthModal
+            isOpen={isAuthOpen}
+            onClose={() => setIsAuthOpen(false)}
+            onAuthSuccess={handleAuthSuccess}
+          />
 
-          {/* Diagnostic Alert Banner on Backend Service Warning */}
-          {diagnosticError && (
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center justify-between shadow-sm animate-in fade-in duration-200">
-              <div className="flex items-center gap-3">
-                <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-amber-900">
-                    {diagnosticError}
-                  </p>
-                  <p className="text-[11px] text-amber-700">
-                    Displaying calibrated offline Andean diagnostic preview while backend re-establishes connectivity.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setDiagnosticError(null)}
-                className="text-xs text-amber-700 hover:text-amber-900 font-bold px-2 py-1 rounded-lg hover:bg-amber-100/50 transition-colors"
-              >
-                Dismiss
-              </button>
-            </div>
+          {/* Interactive Agronomic Follow-up Chat Assistant */}
+          {(chatReport || currentReport) && (
+            <AgronomicChatModal
+              isOpen={isChatOpen}
+              onClose={() => setIsChatOpen(false)}
+              report={chatReport || currentReport!}
+              currentUser={currentUser}
+            />
           )}
 
-          <ErrorBoundary>
-            <DiagnosticCard
-              report={currentReport}
-              isLoading={isAnalyzing}
-              error={diagnosticError}
-              onOpenChat={handleOpenChat}
-              onOpenDosageCalculator={handleOpenDosage}
+          {/* AI Backpack Sprayer Dosage Calculator Modal */}
+          {(dosageReport || currentReport) && (
+            <DosageCalculatorModal
+              isOpen={isDosageOpen}
+              onClose={() => setIsDosageOpen(false)}
+              diagnosticId={(dosageReport || currentReport)!.id}
+              cropType={(dosageReport || currentReport)!.cropType}
+              diseaseName={(dosageReport || currentReport)!.diseaseName}
+              onCalculate={handleCalculateDosage}
             />
-          </ErrorBoundary>
-        </section>
-      </main>
+          )}
 
-      {/* History Drawer Sidebar Modal */}
-      <PlotHistoryDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        onSelectReport={(report) => {
-          setCurrentReport(report);
-          setSelectedCrop(report.cropType);
-          setPlotIdentifier(report.plotIdentifier);
-          setTimeout(() => {
-            diagnosticRef.current?.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        }}
-        onReportsUpdated={refreshMetrics}
-      />
-
-      {/* Glassmorphic Farmer Authentication Modal */}
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
-        onAuthSuccess={handleAuthSuccess}
-      />
-
-      {/* Interactive Agronomic Follow-up Chat Assistant */}
-      {(chatReport || currentReport) && (
-        <AgronomicChatModal
-          isOpen={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-          report={chatReport || currentReport!}
-          currentUser={currentUser}
-        />
-      )}
-
-      {/* AI Backpack Sprayer Dosage Calculator Modal */}
-      {(dosageReport || currentReport) && (
-        <DosageCalculatorModal
-          isOpen={isDosageOpen}
-          onClose={() => setIsDosageOpen(false)}
-          diagnosticId={(dosageReport || currentReport)!.id}
-          cropType={(dosageReport || currentReport)!.cropType}
-          diseaseName={(dosageReport || currentReport)!.diseaseName}
-          onCalculate={handleCalculateDosage}
-        />
-      )}
-
-      {/* Modern Footer */}
-      <footer className="mt-16 border-t border-slate-200 bg-white py-8 text-xs text-slate-500 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Leaf className="w-4 h-4 text-emerald-600" />
-            <span className="font-bold text-slate-900">AgroScan AI</span>
-            <span>— Phytosanitary Diagnostic Assistant for Andean Smallholders</span>
-          </div>
-          <div className="flex items-center gap-4 text-slate-500">
-            <span>FastAPI + MongoDB Atlas + Motor</span>
-            <span className="text-slate-300">|</span>
-            <span className="text-emerald-700 font-mono font-bold">
-              Gemini 2.5 Flash Vision + React
-            </span>
-          </div>
+          {/* Modern Footer */}
+          <footer className="mt-16 border-t border-slate-200 bg-white py-8 text-xs text-slate-500 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Leaf className="w-4 h-4 text-emerald-600" />
+                <span className="font-bold text-slate-900">AgroScan AI</span>
+                <span>— Phytosanitary Diagnostic Assistant for Andean Smallholders</span>
+              </div>
+              <div className="flex items-center gap-4 text-slate-500">
+                <span>FastAPI + MongoDB Atlas + Motor</span>
+                <span className="text-slate-300">|</span>
+                <span className="text-emerald-700 font-mono font-bold">
+                  Gemini 2.5 Flash Vision + React
+                </span>
+              </div>
+            </div>
+          </footer>
         </div>
-      </footer>
-      </div>
       </ErrorBoundary>
     </AuthGate>
   );

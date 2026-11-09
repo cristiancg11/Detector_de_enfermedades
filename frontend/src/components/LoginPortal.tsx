@@ -28,7 +28,6 @@ import { ApiService } from '../services/apiService';
 
 interface LoginPortalProps {
   onLoginSuccess: (user: UserProfile) => void;
-  onContinueAsGuest: () => void;
   backendStatus: {
     status: string;
     gemini_configured: boolean;
@@ -57,7 +56,6 @@ const ROLES: FarmerRole[] = [
 
 export const LoginPortal: React.FC<LoginPortalProps> = ({
   onLoginSuccess,
-  onContinueAsGuest,
   backendStatus,
 }) => {
   const [tab, setTab] = useState<'login' | 'register'>('login');
@@ -87,15 +85,6 @@ export const LoginPortal: React.FC<LoginPortalProps> = ({
           AuthSession.saveSession(res.token, res.user);
           onLoginSuccess(res.user);
         } catch (apiErr: any) {
-          // If remote API is offline or returns error, check demo profiles
-          const demo = AuthSession.DEMO_PROFILES.find(
-            (p) => p.email.toLowerCase() === email.toLowerCase()
-          );
-          if (demo) {
-            const session = AuthSession.loginAsDemo(demo.email);
-            onLoginSuccess(session.user);
-            return;
-          }
           throw apiErr;
         }
       } else {
@@ -136,12 +125,6 @@ export const LoginPortal: React.FC<LoginPortalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleDemoLogin = (emailAddress: string) => {
-    setErrorMsg(null);
-    const session = AuthSession.loginAsDemo(emailAddress);
-    onLoginSuccess(session.user);
   };
 
   return (
@@ -252,46 +235,6 @@ export const LoginPortal: React.FC<LoginPortalProps> = ({
           {/* Right Column: High-End White Auth Card */}
           <div className="lg:col-span-5">
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl shadow-slate-200/60 relative">
-              
-              {/* Fast 1-Click Demo Logins */}
-              <div className="mb-6 pb-6 border-b border-slate-100">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Quick Demo Access (1-Click)</span>
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                    Instant
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin('carlos@agroscan.co')}
-                    className="p-3 rounded-2xl bg-slate-50 hover:bg-emerald-50/70 border border-slate-200 hover:border-emerald-300 text-left transition-all group"
-                  >
-                    <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 truncate">
-                      Don Carlos Guancha
-                    </p>
-                    <p className="text-[11px] text-slate-500 truncate">
-                      Farmer • Túquerres (3,100m)
-                    </p>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin('elena@agrosavia.co')}
-                    className="p-3 rounded-2xl bg-slate-50 hover:bg-emerald-50/70 border border-slate-200 hover:border-emerald-300 text-left transition-all group"
-                  >
-                    <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 truncate">
-                      Dra. Elena Bastidas
-                    </p>
-                    <p className="text-[11px] text-slate-500 truncate">
-                      Agronomist • Pasto (2,527m)
-                    </p>
-                  </button>
-                </div>
-              </div>
-
               {/* Tab Selector: Sign In / Register */}
               <div className="flex p-1 rounded-2xl bg-slate-100 mb-6">
                 <button
@@ -465,18 +408,6 @@ export const LoginPortal: React.FC<LoginPortalProps> = ({
                   )}
                 </button>
               </form>
-
-              {/* Guest Explore Shortcut */}
-              <div className="mt-5 pt-4 border-t border-slate-100 text-center">
-                <button
-                  type="button"
-                  onClick={onContinueAsGuest}
-                  className="text-xs font-bold text-slate-500 hover:text-emerald-700 transition-colors inline-flex items-center gap-1"
-                >
-                  <span>Or explore the scanner as Guest Demo</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
             </div>
           </div>
         </div>

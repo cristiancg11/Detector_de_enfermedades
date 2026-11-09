@@ -126,21 +126,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             onClose();
           }, 350);
         } catch (apiErr: any) {
-          // Resilient demo identity check if backend is offline or credentials match demo
-          const demoUser = AuthSession.DEMO_PROFILES.find(
-            (p) => p.email.toLowerCase() === email.trim().toLowerCase()
-          );
-
-          if (demoUser) {
-            const demoSession = AuthSession.loginAsDemo(demoUser.email);
-            setSuccessMsg(`Welcome back, ${demoUser.fullName}!`);
-            setTimeout(() => {
-              onAuthSuccess(demoSession.user);
-              onClose();
-            }, 350);
-            return;
-          }
-
           throw apiErr;
         }
       } else {
@@ -239,16 +224,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  const handleSelectDemoProfile = (demoEmail: string) => {
-    setErrorMsg(null);
-    const session = AuthSession.loginAsDemo(demoEmail);
-    setSuccessMsg(`Authenticated as ${session.user.fullName}`);
-    setTimeout(() => {
-      onAuthSuccess(session.user);
-      onClose();
-    }, 200);
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Dark Glassmorphic Backdrop */}
@@ -315,39 +290,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <Trees className="w-3.5 h-3.5" />
             <span>Register Farm</span>
           </button>
-        </div>
-
-        {/* Fast 1-Click Demo Profiles */}
-        <div className="relative mt-4 p-3 rounded-2xl bg-slate-800/40 border border-slate-800">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-amber-400" />
-              <span>Instant Andean Demo Accounts</span>
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleSelectDemoProfile('carlos@agroscan.co')}
-              className="p-2 rounded-xl bg-slate-900/80 hover:bg-emerald-950/40 border border-slate-800 hover:border-emerald-600/40 text-left transition-all group"
-            >
-              <p className="text-xs font-bold text-slate-200 group-hover:text-emerald-400 truncate">
-                Don Carlos Guancha
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">Finca Bella Vista (Potato)</p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSelectDemoProfile('elena@agrosavia.co')}
-              className="p-2 rounded-xl bg-slate-900/80 hover:bg-emerald-950/40 border border-slate-800 hover:border-emerald-600/40 text-left transition-all group"
-            >
-              <p className="text-xs font-bold text-slate-200 group-hover:text-emerald-400 truncate">
-                Dra. Elena Bastidas
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">AGROSAVIA Extensionist</p>
-            </button>
-          </div>
         </div>
 
         {/* Feedback Alerts */}

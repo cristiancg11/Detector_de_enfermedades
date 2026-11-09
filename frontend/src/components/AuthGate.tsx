@@ -59,20 +59,6 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
     return <>{children}</>;
   }
 
-  // Handle fast Andean demo profile selection
-  const handleSelectDemo = (demoEmail: string) => {
-    setErrorMessage(null);
-    setIsLoading(true);
-    try {
-      const session = AuthSession.loginAsDemo(demoEmail);
-      setSuccessMessage(`Welcome back, ${session.user.fullName}! Entering dashboard...`);
-    } catch {
-      setErrorMessage('Could not load demo profile.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleModeSwitch = (newMode: 'login' | 'register') => {
     setMode(newMode);
     setErrorMessage(null);
@@ -138,15 +124,6 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
             AuthSession.saveSession(token, userProfile);
           }, 350);
         } catch (apiErr: any) {
-          // Check for Andean demo account fallback
-          const demo = AuthSession.DEMO_PROFILES.find(
-            (p) => p.email.toLowerCase() === cleanEmail
-          );
-          if (demo) {
-            const session = AuthSession.loginAsDemo(demo.email);
-            setSuccessMessage(`Welcome back, ${session.user.fullName}! Entering dashboard...`);
-            return;
-          }
           throw apiErr;
         }
       } else {
@@ -266,39 +243,6 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
             <Trees className="w-3.5 h-3.5" />
             <span>Register Farm</span>
           </button>
-        </div>
-
-        {/* Quick Demo Access Bar */}
-        <div className="mt-4 p-3.5 rounded-2xl bg-slate-950/50 border border-slate-800/80">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-amber-400" />
-              <span>1-Click Andean Demo Accounts</span>
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleSelectDemo('carlos@agroscan.co')}
-              className="p-2.5 rounded-xl bg-slate-900/90 hover:bg-emerald-950/40 border border-slate-800 hover:border-emerald-600/40 text-left transition-all group"
-            >
-              <p className="text-xs font-bold text-slate-200 group-hover:text-emerald-400 truncate">
-                Don Carlos Guancha
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">Finca Bella Vista (Potato)</p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSelectDemo('elena@agrosavia.co')}
-              className="p-2.5 rounded-xl bg-slate-900/90 hover:bg-emerald-950/40 border border-slate-800 hover:border-emerald-600/40 text-left transition-all group"
-            >
-              <p className="text-xs font-bold text-slate-200 group-hover:text-emerald-400 truncate">
-                Dra. Elena Bastidas
-              </p>
-              <p className="text-[10px] text-slate-400 truncate">AGROSAVIA Extensionist</p>
-            </button>
-          </div>
         </div>
 
         {/* Feedback Alerts */}
