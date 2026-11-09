@@ -107,6 +107,7 @@ export class CropDiagnosticRequest {
 
     const formData = new FormData();
     formData.append('image', this._imageBlob, this._fileName);
+    formData.append('file', this._imageBlob, this._fileName);
     formData.append('crop_type', this._cropType);
     formData.append('plot_identifier', this._plotIdentifier);
 
