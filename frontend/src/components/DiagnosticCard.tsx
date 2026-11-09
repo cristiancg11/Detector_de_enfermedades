@@ -1,9 +1,9 @@
 /**
  * AgroScan AI - Modern Bento Diagnostic Card Component.
  *
- * Features an animated confidence gauge, severity status, pathogen badge,
- * phenotypic symptoms tags, and an interactive split-screen treatment comparator
- * with organic bio-inputs vs. chemical interventions.
+ * Fully defensive, null-safe phytosanitary diagnostic presentation.
+ * Gracefully handles loading, empty, and error states, protecting the UI
+ * from runtime null/undefined crashes during remote API evaluations.
  */
 
 import React, { useState } from 'react';
@@ -25,18 +25,24 @@ import {
   Download,
   MessageSquare,
   Calculator,
+  Loader2,
+  AlertOctagon,
 } from 'lucide-react';
 import { DiagnosticReport } from '../models/DiagnosticReport';
 import { DosageCalculatorModal } from './DosageCalculatorModal';
 
 interface DiagnosticCardProps {
-  report: DiagnosticReport;
-  onOpenChat?: (report: DiagnosticReport) => void;
-  onOpenDosageCalculator?: (report: DiagnosticReport) => void;
+  report?: DiagnosticReport | any | null;
+  isLoading?: boolean;
+  error?: string | null;
+  onOpenChat?: (report: any) => void;
+  onOpenDosageCalculator?: (report: any) => void;
 }
 
 export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
   report,
+  isLoading = false,
+  error = null,
   onOpenChat,
   onOpenDosageCalculator,
 }) => {
@@ -44,23 +50,181 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
   const [copied, setCopied] = useState<boolean>(false);
   const [isDosageModalOpen, setIsDosageModalOpen] = useState<boolean>(false);
 
-  const pathogenBadge = report.getPathogenBadge();
-  const confidencePercent = Math.round(report.confidenceScore * 100);
+  // 1. Loading State Presentation
+  if (isLoading) {
+    return (
+      <div className="rounded-3xl p-8 sm:p-12 bg-white border border-slate-200 shadow-card flex flex-col items-center justify-center text-center space-y-4 animate-pulse">
+        <div className="w-16 h-16 rounded-3xl bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+        <div>
+          <h3 className="text-lg font-black text-slate-900">
+            Analyzing leaf tissue with Gemini AI...
+          </h3>
+          <p className="text-xs text-slate-500 max-w-sm mt-1">
+            Applying convolutional Andean phytopathology models and retrieving organic vs. chemical pathways.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Error State Presentation
+  if (error) {
+    return (
+      <div className="rounded-3xl p-6 sm:p-8 bg-rose-50/70 border border-rose-200 shadow-sm flex items-start gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center text-rose-600 shrink-0">
+          <AlertOctagon className="w-6 h-6" />
+        </div>
+        <div>
+          <h3 className="text-base font-bold text-rose-900">Diagnostic Service Notice</h3>
+          <p className="text-xs text-rose-700 mt-1 leading-relaxed">{error}</p>
+          <p className="text-[11px] text-rose-500 mt-2">
+            Diagnostic service error: please verify backend connection at http://localhost:8000
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Empty State Presentation
+  if (!report) {
+    return (
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-12 text-center flex flex-col items-center shadow-card">
+        <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-4 shadow-sm">
+          <Sprout className="w-8 h-8" />
+        </div>
+        <h3 className="text-lg font-bold text-slate-900">
+          Ready for Andean Crop Health Diagnostic
+        </h3>
+        <p className="text-xs text-slate-500 max-w-md mt-1">
+          Select your crop, designate the farm plot or lot, and upload a leaf photo to trigger Gemini 2.5 Flash analysis with MongoDB Atlas persistence.
+        </p>
+      </div>
+    );
+  }
+
+  // 4. Defensive Null-Safe Field Normalization
+  const diagnostic = report;
+
+  const organicTreatment: string[] =
+    diagnostic?.organic_treatment || diagnostic?.organicTreatment || [];
+  const chemicalTreatment: string[] =
+    diagnostic?.chemical_treatment || diagnostic?.chemicalTreatment || [];
+  const preventiveActions: string[] =
+    diagnostic?.preventive_actions ||
+    diagnostic?.preventive_measures ||
+    diagnostic?.preventiveMeasures ||
+    [];
+  const rawConfidence: number =
+    diagnostic?.confidence_score ?? diagnostic?.confidenceScore ?? 0;
+  const confidenceScore = Math.max(0, Math.min(1, Number(rawConfidence) || 0));
+  const confidencePercent = Math.round(confidenceScore * 100);
+
+  const symptoms: string[] = diagnostic?.symptoms || [];
+  const diseaseName: string =
+    diagnostic?.disease_name || diagnostic?.diseaseName || 'Unidentified Foliar Condition';
+  const scientificName: string | null =
+    diagnostic?.scientific_name || diagnostic?.scientificName || null;
+  const cropType: string =
+    diagnostic?.crop_type || diagnostic?.cropType || 'Potato';
+  const plotIdentifier: string =
+    diagnostic?.plot_identifier || diagnostic?.plotIdentifier || 'Plot A';
+  const severityLevel: 'LOW' | 'MODERATE' | 'CRITICAL' = (
+    diagnostic?.severity_level ||
+    diagnostic?.severityLevel ||
+    'LOW'
+  ).toUpperCase() as 'LOW' | 'MODERATE' | 'CRITICAL';
+  const diagnosisSummary: string =
+    diagnostic?.diagnosis_summary ||
+    diagnostic?.diagnosisSummary ||
+    'Phytosanitary assessment completed successfully.';
+  const diagnosticId: string = diagnostic?.id || `diag-${Date.now()}`;
+
+  // Safe Pathogen Badge Calculator
+  const getSafePathogenBadge = () => {
+    if (typeof diagnostic?.getPathogenBadge === 'function') {
+      try {
+        return diagnostic.getPathogenBadge();
+      } catch {
+        // Fallback below
+      }
+    }
+    const pathogen = (diagnostic?.pathogen_type || diagnostic?.pathogenType || 'HEALTHY').toUpperCase();
+    switch (pathogen) {
+      case 'FUNGUS':
+        return { label: 'FUNGAL PATHOGEN', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300' };
+      case 'BACTERIA':
+        return { label: 'BACTERIAL INFECTION', badgeClass: 'bg-rose-100 text-rose-800 border-rose-300' };
+      case 'VIRUS':
+        return { label: 'VIRAL DISEASE', badgeClass: 'bg-purple-100 text-purple-800 border-purple-300' };
+      case 'PEST':
+        return { label: 'INSECT PEST DAMAGE', badgeClass: 'bg-orange-100 text-orange-800 border-orange-300' };
+      default:
+        return { label: 'HEALTHY TISSUE', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
+    }
+  };
+  const pathogenBadge = getSafePathogenBadge();
+
+  // Safe Crop Icon
+  const getCropIcon = (crop: string) => {
+    switch (crop.toLowerCase()) {
+      case 'potato': return '🥔';
+      case 'coffee': return '☕';
+      case 'corn': return '🌽';
+      case 'tomato': return '🍅';
+      default: return '🌱';
+    }
+  };
+
+  // Safe Date Formatter
+  const formattedDate = (): string => {
+    if (typeof diagnostic?.formattedDate === 'function') {
+      try {
+        return diagnostic.formattedDate();
+      } catch {
+        // Fallback below
+      }
+    }
+    const dateVal = diagnostic?.created_at || diagnostic?.createdAt;
+    if (dateVal) {
+      try {
+        return new Date(dateVal).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        });
+      } catch {
+        return new Date().toLocaleDateString();
+      }
+    }
+    return new Date().toLocaleDateString();
+  };
+
+  const formattedConfidence = `${confidencePercent}%`;
 
   const handleCopySummary = () => {
-    const text = `[AgroScan AI Diagnostic Report]\nCrop: ${report.cropType} (${report.plotIdentifier})\nDisease: ${report.diseaseName} (${pathogenBadge.label})\nSeverity: ${report.severityLevel} | Confidence: ${report.formattedConfidence()}\nSummary: ${report.diagnosisSummary}\nDate: ${report.formattedDate()}`;
+    const text = `[AgroScan AI Diagnostic Report]\nCrop: ${cropType} (${plotIdentifier})\nDisease: ${diseaseName} (${pathogenBadge.label})\nSeverity: ${severityLevel} | Confidence: ${formattedConfidence}\nSummary: ${diagnosisSummary}\nDate: ${formattedDate()}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleExportJSON = () => {
-    const jsonStr = JSON.stringify(report.toJSON(), null, 2);
+    let exportData = diagnostic;
+    if (typeof diagnostic?.toJSON === 'function') {
+      try {
+        exportData = diagnostic.toJSON();
+      } catch {
+        // Fallback to raw object
+      }
+    }
+    const jsonStr = JSON.stringify(exportData, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `diagnostic_${report.id}.json`;
+    a.download = `diagnostic_${diagnosticId}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -70,9 +234,9 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
       {/* Top Severity Indicator Stripe */}
       <div
         className={`absolute top-0 left-0 right-0 h-1.5 ${
-          report.severityLevel === 'CRITICAL'
+          severityLevel === 'CRITICAL'
             ? 'bg-rose-500'
-            : report.severityLevel === 'MODERATE'
+            : severityLevel === 'MODERATE'
             ? 'bg-amber-500'
             : 'bg-emerald-500'
         }`}
@@ -86,17 +250,17 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
             {/* Severity Pill */}
             <span
               className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${
-                report.severityLevel === 'CRITICAL'
+                severityLevel === 'CRITICAL'
                   ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                  : report.severityLevel === 'MODERATE'
+                  : severityLevel === 'MODERATE'
                   ? 'bg-amber-50 text-amber-800 border border-amber-200'
                   : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
               }`}
             >
-              {report.severityLevel === 'CRITICAL' && <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />}
-              {report.severityLevel === 'MODERATE' && <Info className="w-3.5 h-3.5 text-amber-600" />}
-              {report.severityLevel === 'LOW' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
-              Severity: {report.severityLevel}
+              {severityLevel === 'CRITICAL' && <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />}
+              {severityLevel === 'MODERATE' && <Info className="w-3.5 h-3.5 text-amber-600" />}
+              {severityLevel === 'LOW' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+              Severity: {severityLevel}
             </span>
 
             {/* Pathogen Type Badge */}
@@ -108,33 +272,33 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
             {/* Crop Badge */}
             <span className="px-3 py-1 rounded-full bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5">
-              <span>{report.getCropIcon()}</span>
-              <span>{report.cropType}</span>
+              <span>{getCropIcon(cropType)}</span>
+              <span>{cropType}</span>
             </span>
 
             {/* Plot Identifier */}
             <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-mono font-medium flex items-center gap-1">
               <MapPin className="w-3 h-3 text-emerald-600" />
-              <span>{report.plotIdentifier}</span>
+              <span>{plotIdentifier}</span>
             </span>
           </div>
 
           {/* Disease Common Name */}
           <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <span>{report.diseaseName}</span>
+            <span>{diseaseName}</span>
           </h3>
 
           {/* Scientific Taxon Name */}
-          {report.scientificName && (
+          {scientificName && (
             <p className="text-teal-700 text-sm italic font-mono mt-1 font-semibold flex items-center gap-1.5">
               <Activity className="w-3.5 h-3.5 text-teal-600" />
-              {report.scientificName}
+              {scientificName}
             </p>
           )}
 
           {/* Diagnosis Summary Text */}
           <p className="text-xs sm:text-sm text-slate-600 mt-3 leading-relaxed max-w-3xl">
-            {report.diagnosisSummary}
+            {diagnosisSummary}
           </p>
         </div>
 
@@ -152,9 +316,9 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               />
               <path
                 className={`${
-                  report.confidenceScore >= 0.85
+                  confidenceScore >= 0.85
                     ? 'text-emerald-500'
-                    : report.confidenceScore >= 0.70
+                    : confidenceScore >= 0.70
                     ? 'text-amber-500'
                     : 'text-rose-500'
                 } transition-all duration-1000 ease-out`}
@@ -185,14 +349,14 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
       </div>
 
       {/* Phenotypic Symptoms Tags */}
-      {report.symptoms.length > 0 && (
+      {symptoms.length > 0 && (
         <div className="py-4 border-b border-slate-100">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-emerald-600" />
             <span>Observed Phenotypic Symptoms:</span>
           </h4>
           <div className="flex flex-wrap gap-2">
-            {report.symptoms.map((symptom, idx) => (
+            {symptoms.map((symptom, idx) => (
               <span
                 key={idx}
                 className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-center gap-1.5 font-medium shadow-sm"
@@ -277,8 +441,8 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 </div>
 
                 <ul className="space-y-2.5">
-                  {report.organicTreatment.length > 0 ? (
-                    report.organicTreatment.map((item, idx) => (
+                  {(organicTreatment?.length ?? 0) > 0 ? (
+                    (organicTreatment || []).map((item, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                         <span className="leading-relaxed">{item}</span>
@@ -314,8 +478,8 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 </div>
 
                 <ul className="space-y-2.5">
-                  {report.chemicalTreatment.length > 0 ? (
-                    report.chemicalTreatment.map((item, idx) => (
+                  {(chemicalTreatment?.length ?? 0) > 0 ? (
+                    (chemicalTreatment || []).map((item, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700">
                         <ArrowRight className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
                         <span className="leading-relaxed">{item}</span>
@@ -338,14 +502,14 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
         </div>
 
         {/* Preventive Cultural Agronomy */}
-        {report.preventiveMeasures.length > 0 && (
+        {(preventiveActions?.length ?? 0) > 0 && (
           <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
             <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
               <span>Cultural Agronomic Preventive Measures:</span>
             </h5>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {report.preventiveMeasures.map((prev, idx) => (
+              {(preventiveActions || []).map((prev, idx) => (
                 <div key={idx} className="flex items-start gap-2 text-xs text-slate-600">
                   <span className="text-emerald-600 font-bold">•</span>
                   <span>{prev}</span>
@@ -360,10 +524,10 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           <div className="flex items-center gap-3 text-slate-500 font-mono text-[11px]">
             <span className="flex items-center gap-1">
               <Calendar className="w-3 h-3 text-slate-400" />
-              <span>{report.formattedDate()}</span>
+              <span>{formattedDate()}</span>
             </span>
             <span className="text-slate-300">|</span>
-            <span className="text-slate-400 truncate max-w-[200px]">ID: {report.id}</span>
+            <span className="text-slate-400 truncate max-w-[200px]">ID: {diagnosticId}</span>
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
@@ -372,7 +536,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               type="button"
               onClick={() => {
                 if (onOpenDosageCalculator) {
-                  onOpenDosageCalculator(report);
+                  onOpenDosageCalculator(diagnostic);
                 } else {
                   setIsDosageModalOpen(true);
                 }
@@ -386,7 +550,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
             {onOpenChat && (
               <button
                 type="button"
-                onClick={() => onOpenChat(report)}
+                onClick={() => onOpenChat(diagnostic)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-all text-xs font-bold shadow-sm active:scale-95"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
@@ -419,9 +583,9 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           <DosageCalculatorModal
             isOpen={isDosageModalOpen}
             onClose={() => setIsDosageModalOpen(false)}
-            diagnosticId={report.id}
-            cropType={report.cropType}
-            diseaseName={report.diseaseName}
+            diagnosticId={diagnosticId}
+            cropType={cropType}
+            diseaseName={diseaseName}
           />
         )}
       </div>
