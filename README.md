@@ -3,7 +3,7 @@
 **Course:** Web-Oriented Programming (Programación Orientada a la Web)  
 **Target Region:** Department of Nariño, Colombia (Andean Highlands, 1,500m – 3,200m a.s.l.)  
 **Repository:** [github.com/cristiancg11/Detector_de_enfermedades](https://github.com/cristiancg11/Detector_de_enfermedades.git)  
-**Branch:** `feature/ai-dosage-calculator`  
+**Branch:** `feature/mandatory-auth-gate`  
 **Frontend URL:** `http://localhost:5180` | **Backend API:** `http://localhost:8000`
 
 ---
@@ -59,6 +59,46 @@ The system integrates client-side image processing via **Web Workers** (`Offscre
 ---
 
 ## 3. Key Technical Highlights
+
+### 🛡️ Mandatory Authentication Gate & Route Guard Architecture (`AuthGate`)
+- **Zero-Bypass Access Control**:
+  - The entire application interior is wrapped inside `<AuthGate>`, enforcing that visitors **CANNOT** view, access, or interact with crop scanning, diagnostic models, dosage calculations, or history records without an active session.
+  - Backdrop dismissal is completely disabled (no close button or backdrop dismiss).
+  - Background network requests (such as MongoDB Atlas diagnostic history synchronization) are strictly deferred until authentication evaluates to `true`.
+- **Reactive Auth State Dispatcher**:
+  - `AuthSession.onAuthStateChange()` provides a subscriber pattern that updates UI views across the application instantly upon sign-in or session invalidation.
+- **HTTP 401/403 Security Interceptor**:
+  - Built into `ApiService.authFetch()` (`src/services/api.ts`): inspects all responses from the FastAPI backend. If `401 Unauthorized` or `403 Forbidden` is received, it automatically executes `AuthSession.clearSession()` and displays the `AuthGate` screen without reloading the page.
+- **Protected Farmer Identity Navigation**:
+  - The top navigation bar displays the authenticated farmer's name, estate/parcel name, and a dedicated **Log Out** button that securely destroys the JWT session and returns directly to the gate.
+
+#### Authentication Enforcement Flow Diagram
+```
+┌────────────────────────────────────────────────────────┐
+│             Visitor Arrives at AgroScan AI             │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+              ┌───────────────────────────┐
+              │ AuthSession Token Check:  │
+              │ Non-empty, valid, unexpired│
+              └─────────────┬─────────────┘
+                            │
+            ┌───────────────┴───────────────┐
+         No │                               │ Yes
+            ▼                               ▼
+┌───────────────────────────────┐  ┌────────────────────────────────────┐
+│   Fullscreen Mandatory Gate   │  │        Protected Dashboard         │
+│         (<AuthGate />)        │  │   • CropScanner (OffscreenCanvas)  │
+│  • Dark Obsidian Landing Hero │  │   • DiagnosticCard & Treatments    │
+│  • Branded Andean Crop Emblem │  │   • 20L Backpack Dosage Calculator │
+│  • Tabbed Sign In / Register  │  │   • MongoDB Atlas Plot Drawer      │
+│  • 1-Click Andean Demo Fast-ID│  │   • Farmer Profile Badge & Log Out │
+└───────────────┬───────────────┘  └─────────────────┬──────────────────┘
+                │ Authentication                     │ HTTP 401 Session
+                │ Successful                         │ Expiration / Logout
+                └────────────────────────────────────┘
+```
 
 ### 🍱 Ultra-Modern Bento Grid & Glassmorphism Dashboard
 - **Deep Obsidian Night Theme** (`bg-slate-950`, `bg-slate-900/80`): Rich, sleek dark theme with frosted translucent borders (`border-white/10`) and radial blur ambient backdrops.
