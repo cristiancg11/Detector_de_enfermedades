@@ -25,6 +25,7 @@ import { ApiService } from '../services/apiService';
 import { AgronomicChatThread } from '../models/AgronomicChatThread';
 import { DiagnosticReport } from '../models/DiagnosticReport';
 import { UserProfile } from '../types';
+import { yieldToMainThread } from '../utils/scheduler';
 
 export interface AgronomicChatProps {
   report: DiagnosticReport | any;
@@ -136,6 +137,9 @@ export const AgronomicChat: React.FC<AgronomicChatProps> = ({
       )
     );
     setIsLoading(true);
+
+    // Yield immediately to browser event loop to flush user message to screen (<50ms INP)
+    await yieldToMainThread();
 
     try {
       const response = await ApiService.sendAgronomicChat(

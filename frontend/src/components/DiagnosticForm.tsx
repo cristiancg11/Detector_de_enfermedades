@@ -22,6 +22,7 @@ import { CropDiagnosticRequest } from '../models/CropDiagnosticRequest';
 import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
 import { useLanguage } from '../context/LanguageContext';
 import { WorkerBridge } from '../utils/WorkerBridge';
+import { yieldToMainThread } from '../utils/scheduler';
 
 export interface DiagnosticFormProps {
   onSubmit: (request: CropDiagnosticRequest, previewUrl: string, fieldNotes?: string) => void;
@@ -109,7 +110,7 @@ export const DiagnosticForm: React.FC<DiagnosticFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile && !previewUrl) {
       setFormError(
@@ -123,6 +124,9 @@ export const DiagnosticForm: React.FC<DiagnosticFormProps> = ({
     if (isListening) {
       stopListening();
     }
+
+    // Yield control to main thread to guarantee instantaneous INP (<50ms) on tap
+    await yieldToMainThread();
 
     const request = new CropDiagnosticRequest({
       imageBlob: selectedFile || new Blob(),
