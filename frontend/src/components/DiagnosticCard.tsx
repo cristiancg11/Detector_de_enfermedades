@@ -69,10 +69,10 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
         </div>
         <div>
           <h3 className="text-lg font-black text-slate-900 dark:text-white">
-            Analyzing leaf tissue with Gemini AI...
+            Analizando tejido foliar con IA Gemini...
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">
-            Applying convolutional Andean phytopathology models and retrieving organic vs. chemical pathways.
+            Aplicando modelos convolucionales de fitopatología andina y recuperando rutas orgánicas vs. químicas.
           </p>
         </div>
       </div>
@@ -87,10 +87,10 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           <AlertOctagon className="w-6 h-6" />
         </div>
         <div>
-          <h3 className="text-base font-bold text-rose-900 dark:text-rose-200">Diagnostic Service Notice</h3>
+          <h3 className="text-base font-bold text-rose-900 dark:text-rose-200">Aviso del Servicio de Diagnóstico</h3>
           <p className="text-xs text-rose-700 dark:text-rose-300 mt-1 leading-relaxed">{error}</p>
           <p className="text-[11px] text-rose-500 dark:text-rose-400 mt-2">
-            Diagnostic service error: please verify backend connection at http://localhost:8000
+            Error en el servicio de diagnóstico: por favor verifique la conexión del servidor en http://localhost:8000
           </p>
         </div>
       </div>
@@ -105,10 +105,10 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           <Sprout className="w-8 h-8" />
         </div>
         <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-          Ready for Andean Crop Health Diagnostic
+          Listo para Diagnóstico Fitosanitario Andino
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mt-1">
-          Select your crop, designate the farm plot or lot, and upload a leaf photo to trigger Gemini 2.5 Flash analysis with MongoDB Atlas persistence.
+          Selecciona tu cultivo, indica el lote o parcela y sube una foto de la hoja para activar el análisis con IA Gemini.
         </p>
       </div>
     );
@@ -224,15 +224,15 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
     const pathogen = safeStr(diagnostic?.pathogen_type || diagnostic?.pathogenType, 'HEALTHY').toUpperCase();
     switch (pathogen) {
       case 'FUNGUS':
-        return { label: 'FUNGAL PATHOGEN', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300' };
+        return { label: 'PATÓGENO FÚNGICO (HONGO)', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300' };
       case 'BACTERIA':
-        return { label: 'BACTERIAL INFECTION', badgeClass: 'bg-rose-100 text-rose-800 border-rose-300' };
+        return { label: 'INFECCIÓN BACTERIANA', badgeClass: 'bg-rose-100 text-rose-800 border-rose-300' };
       case 'VIRUS':
-        return { label: 'VIRAL DISEASE', badgeClass: 'bg-purple-100 text-purple-800 border-purple-300' };
+        return { label: 'ENFERMEDAD VIRAL', badgeClass: 'bg-purple-100 text-purple-800 border-purple-300' };
       case 'PEST':
-        return { label: 'INSECT PEST DAMAGE', badgeClass: 'bg-orange-100 text-orange-800 border-orange-300' };
+        return { label: 'DAÑO POR PLAGAS / INSECTOS', badgeClass: 'bg-orange-100 text-orange-800 border-orange-300' };
       default:
-        return { label: 'HEALTHY TISSUE', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
+        return { label: 'TEJIDO SANO', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
     }
   };
   const pathogenBadge = getSafePathogenBadge();
@@ -352,7 +352,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               {severityLevel === 'CRITICAL' && <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />}
               {severityLevel === 'MODERATE' && <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
               {severityLevel === 'LOW' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />}
-              Severity: {severityLevel}
+              Severidad: {severityLevel === 'CRITICAL' ? 'Crítica' : severityLevel === 'MODERATE' ? 'Moderada' : 'Leve'}
             </span>
 
             {/* Pathogen Type Badge */}
@@ -430,13 +430,13 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 {confidencePercent}%
               </span>
               <span className="text-[9px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
-                Score
+                Nivel
               </span>
             </div>
           </div>
           <div className="text-right sm:text-center mt-0 sm:mt-2">
             <span className="text-[11px] font-black uppercase text-emerald-800 dark:text-emerald-300 tracking-wider">
-              AI Confidence
+              Confianza IA
             </span>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Gemini 2.5 Flash</p>
           </div>
@@ -448,7 +448,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
         <div className="py-4 border-b border-slate-100 dark:border-slate-800">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>Observed Phenotypic Symptoms:</span>
+            <span>Síntomas Fenotípicos Observados:</span>
           </h4>
           <div className="flex flex-wrap gap-2">
             {symptoms.map((symptom, idx) => (
@@ -473,10 +473,10 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
             </div>
             <div>
               <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                Agronomic Management Pathways
+                Plan de Manejo Fitosanitario
               </h4>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                Compare bio-organic solutions vs. conventional chemical treatments
+                Tratamiento ecológico vs. intervención química convencional
               </p>
             </div>
           </div>
@@ -492,7 +492,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              Split-Screen
+              Vista Dividida
             </button>
             <button
               type="button"
@@ -503,7 +503,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              Organic Only
+              Solo Orgánico
             </button>
             <button
               type="button"
@@ -514,7 +514,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              Chemical Only
+              Solo Químico
             </button>
           </div>
         </div>
@@ -528,10 +528,10 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-emerald-200 dark:border-emerald-800/60">
                   <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-extrabold text-xs uppercase tracking-wider">
                     <Sprout className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span>Biological & Organic Control</span>
+                    <span>🌱 CONTROL BIOLÓGICO Y ECOLÓGICO</span>
                   </div>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold">
-                    Eco-Friendly
+                    Amigable con el ambiente
                   </span>
                 </div>
 
@@ -545,7 +545,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                     ))
                   ) : (
                     <li className="text-xs text-slate-500 dark:text-slate-400 italic">
-                      No specific biological interventions required for this pathogen phase.
+                      No se requieren intervenciones biológicas específicas para esta fase del patógeno.
                     </li>
                   )}
                 </ul>
@@ -553,7 +553,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
               <div className="mt-4 pt-3 border-t border-emerald-200/80 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>Zero chemical residue; compliant with organic highland standards.</span>
+                <span>Sin residualidad química; apto para normas de producción limpia.</span>
               </div>
             </div>
           )}
@@ -565,10 +565,10 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-sky-200 dark:border-sky-800/60">
                   <div className="flex items-center gap-2 text-sky-800 dark:text-sky-300 font-extrabold text-xs uppercase tracking-wider">
                     <FlaskConical className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                    <span>Chemical & Technical Intervention</span>
+                    <span>🧪 CONTROL QUÍMICO FOCALIZADO</span>
                   </div>
                   <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 text-[10px] font-bold">
-                    Targeted Action
+                    Acción Sistémica / Contacto
                   </span>
                 </div>
 
@@ -582,7 +582,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                     ))
                   ) : (
                     <li className="text-xs text-slate-500 dark:text-slate-400 italic">
-                      No synthetic pesticide intervention mandated.
+                      No se requiere intervención con plaguicidas sintéticos.
                     </li>
                   )}
                 </ul>
@@ -590,7 +590,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
               <div className="mt-4 pt-3 border-t border-sky-200/80 dark:border-sky-800/60 text-[11px] text-sky-800 dark:text-sky-300 flex items-center gap-1.5 font-medium">
                 <AlertTriangle className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-                <span>Wear full PPE and strictly observe pre-harvest safety intervals.</span>
+                <span>Usar equipo de protección personal (EPP) y respetar el periodo de carencia antes de cosechar.</span>
               </div>
             </div>
           )}
@@ -601,7 +601,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Cultural Agronomic Preventive Measures:</span>
+              <span>Medidas Culturales y Preventivas:</span>
             </h5>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {(actions || []).map((prev: string, idx: number) => (
@@ -619,7 +619,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           <div className="mt-4 p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold">
               <Calculator className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>Calibrated 20L Backpack Dosage:</span>
+              <span>Dosis Calibrada Bomba 20L:</span>
               <span className="font-mono text-emerald-900 dark:text-emerald-200 font-extrabold">{dosage}</span>
             </div>
           </div>
@@ -650,7 +650,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all text-xs font-bold shadow-emerald-soft active:scale-95"
             >
               <Calculator className="w-3.5 h-3.5 text-emerald-200" />
-              <span>Calculate 20L Backpack Dosage & Rain Risk</span>
+              <span>Calcular Dosis Bomba 20L y Clima</span>
             </button>
 
             {onOpenChat && (
@@ -660,7 +660,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white transition-all text-xs font-bold shadow-sm active:scale-95"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
-                <span>Ask Agronomist Follow-up Questions</span>
+                <span>Hacer Pregunta al Agrónomo IA</span>
               </button>
             )}
 
@@ -670,7 +670,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-all text-xs font-bold shadow-sm"
             >
               <Download className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-              <span>Export JSON</span>
+              <span>Descargar Receta JSON</span>
             </button>
 
             <button
@@ -679,7 +679,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 transition-all text-xs font-bold shadow-sm"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Copied to Clipboard!' : 'Copy Summary'}</span>
+              <span>{copied ? '¡Copiado al Portapapeles!' : 'Copiar Resumen'}</span>
             </button>
           </div>
         </div>
