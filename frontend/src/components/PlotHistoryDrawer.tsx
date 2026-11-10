@@ -241,7 +241,7 @@ export const PlotHistoryDrawer: React.FC<PlotHistoryDrawerProps> = ({
                       onSelectReport(report);
                       onClose();
                     }}
-                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50/50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between"
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50/50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between history-card-optimized gpu-accelerated"
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2">

@@ -50,29 +50,55 @@
     linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
 }
 
+/* GPU-Accelerated Hardware Composition Layers */
+.gpu-accelerated {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Rendering Pipeline: Off-Screen Layout Virtualization via Content Visibility */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
+.history-card-optimized {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 160px;
+}
+
 /* Pristine Surface Classes */
 .glass-panel {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .dark .glass-panel {
   background: #0f172a;
   border: 1px solid #1e293b;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .glass-panel-glow {
   background: #ffffff;
   border: 1px solid #a7f3d0;
   box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.12), 0 8px 10px -6px rgba(5, 150, 105, 0.06);
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .dark .glass-panel-glow {
   background: #0f172a;
   border: 1px solid #065f46;
   box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.2), 0 8px 10px -6px rgba(5, 150, 105, 0.1);
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 /* Custom Scrollbars */

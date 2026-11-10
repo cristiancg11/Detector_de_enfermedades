@@ -287,9 +287,15 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
   const handleCopySummary = () => {
     const text = `[AgroScan AI Diagnostic Report]\nCrop: ${cropType} (${plotIdentifier})\nDisease: ${diseaseName} (${pathogenBadge.label})\nSeverity: ${severityLevel} | Confidence: ${formattedConfidence}\nSummary: ${summary}\nDosage: ${dosage}\nDate: ${formattedDate()}`;
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    
+    // Batch DOM write in requestAnimationFrame to eliminate layout thrashing
+    requestAnimationFrame(() => {
+      navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => {
+        requestAnimationFrame(() => setCopied(false));
+      }, 2000);
+    });
   };
 
   const handleExportJSON = () => {
@@ -304,15 +310,19 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
     const jsonStr = JSON.stringify(exportData, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `diagnostic_${diagnosticId}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    // Batch DOM element creation and click in requestAnimationFrame to avoid forced reflow
+    requestAnimationFrame(() => {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `diagnostic_${diagnosticId}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
   };
 
   return (
-    <div className="relative rounded-3xl p-6 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-card hover:shadow-card-hover transition-all overflow-hidden">
+    <div className="relative rounded-3xl p-6 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-card hover:shadow-card-hover transition-all overflow-hidden gpu-accelerated content-visibility-auto">
       {/* Top Severity Indicator Stripe */}
       <div
         className={`absolute top-0 left-0 right-0 h-1.5 ${
