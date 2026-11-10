@@ -547,7 +547,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
           {/* Disease Common Name & Audio Narration Widget */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-wide flex items-center gap-2">
               <span>{diseaseName}</span>
             </h3>
             <VoiceNarrationButton report={diagnostic} />
@@ -555,14 +555,14 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
           {/* Scientific Taxon Name */}
           {scientificName && scientificName !== 'No especificado' && (
-            <p className="text-teal-700 dark:text-teal-400 text-sm italic font-mono mt-1 font-semibold flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+            <p className="text-xl md:text-2xl font-semibold text-emerald-600 dark:text-emerald-400 italic font-mono mt-1.5 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               {scientificName}
             </p>
           )}
 
           {/* Diagnosis Summary Text */}
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-3 leading-relaxed max-w-3xl">
+          <p className="text-base md:text-lg text-slate-700 dark:text-slate-200 mt-4 leading-relaxed max-w-3xl">
             {summary}
           </p>
         </div>
@@ -638,14 +638,14 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
       <div className="pt-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
-              <Layers className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
+              <Layers className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+              <h4 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                 Plan de Manejo Fitosanitario
               </h4>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-sm md:text-base text-slate-600 dark:text-slate-300 font-medium mt-0.5">
                 Tratamiento ecológico vs. intervención química convencional
               </p>
             </div>
@@ -656,7 +656,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('split')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${
                 activeTab === 'split'
                   ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -667,7 +667,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('organic')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${
                 activeTab === 'organic'
                   ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -678,7 +678,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('chemical')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all ${
                 activeTab === 'chemical'
                   ? 'bg-white dark:bg-slate-700 text-sky-800 dark:text-sky-300 shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -693,36 +693,36 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Organic / Biological Pathway */}
           {(activeTab === 'split' || activeTab === 'organic') && (
-            <div className="p-5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 flex flex-col justify-between">
+            <div className="p-5 sm:p-6 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-emerald-200 dark:border-emerald-800/60">
-                  <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-extrabold text-xs uppercase tracking-wider">
-                    <Sprout className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-extrabold text-sm md:text-base uppercase tracking-wider">
+                    <Sprout className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                     <span>🌱 CONTROL BIOLÓGICO Y ECOLÓGICO</span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold">
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
                     Amigable con el ambiente
                   </span>
                 </div>
 
-                <ul className="space-y-2.5">
+                <ul className="space-y-3">
                   {(organicTreatmentList?.length ?? 0) > 0 ? (
                     (organicTreatmentList || []).map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                      <li key={idx} className="flex items-start gap-2.5 text-sm md:text-base text-slate-800 dark:text-slate-200">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                         <span className="leading-relaxed">{item}</span>
                       </li>
                     ))
                   ) : (
-                    <li className="text-xs text-slate-500 dark:text-slate-400 italic">
+                    <li className="text-sm md:text-base text-slate-500 dark:text-slate-400 italic">
                       No se requieren intervenciones biológicas específicas para esta fase del patógeno.
                     </li>
                   )}
                 </ul>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-emerald-200/80 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 font-medium">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <div className="mt-4 pt-3 border-t border-emerald-200/80 dark:border-emerald-800/60 text-xs md:text-sm text-emerald-800 dark:text-emerald-300 flex items-center gap-2 font-medium">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Sin residualidad química; apto para normas de producción limpia.</span>
               </div>
             </div>
@@ -730,36 +730,36 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
           {/* Chemical / Conventional Pathway */}
           {(activeTab === 'split' || activeTab === 'chemical') && (
-            <div className="p-5 rounded-2xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800/60 flex flex-col justify-between">
+            <div className="p-5 sm:p-6 rounded-2xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800/60 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-sky-200 dark:border-sky-800/60">
-                  <div className="flex items-center gap-2 text-sky-800 dark:text-sky-300 font-extrabold text-xs uppercase tracking-wider">
-                    <FlaskConical className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                  <div className="flex items-center gap-2 text-sky-800 dark:text-sky-300 font-extrabold text-sm md:text-base uppercase tracking-wider">
+                    <FlaskConical className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                     <span>🧪 CONTROL QUÍMICO FOCALIZADO</span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 text-[10px] font-bold">
+                  <span className="px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 text-xs font-bold">
                     Acción Sistémica / Contacto
                   </span>
                 </div>
 
-                <ul className="space-y-2.5">
+                <ul className="space-y-3">
                   {(chemicalTreatmentList?.length ?? 0) > 0 ? (
                     (chemicalTreatmentList || []).map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
-                        <ArrowRight className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
+                      <li key={idx} className="flex items-start gap-2.5 text-sm md:text-base text-slate-800 dark:text-slate-200">
+                        <ArrowRight className="w-5 h-5 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
                         <span className="leading-relaxed">{item}</span>
                       </li>
                     ))
                   ) : (
-                    <li className="text-xs text-slate-500 dark:text-slate-400 italic">
+                    <li className="text-sm md:text-base text-slate-500 dark:text-slate-400 italic">
                       No se requiere intervención con plaguicidas sintéticos.
                     </li>
                   )}
                 </ul>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-sky-200/80 dark:border-sky-800/60 text-[11px] text-sky-800 dark:text-sky-300 flex items-center gap-1.5 font-medium">
-                <AlertTriangle className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+              <div className="mt-4 pt-3 border-t border-sky-200/80 dark:border-sky-800/60 text-xs md:text-sm text-sky-800 dark:text-sky-300 flex items-center gap-2 font-medium">
+                <AlertTriangle className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                 <span>Usar equipo de protección personal (EPP) y respetar el periodo de carencia antes de cosechar.</span>
               </div>
             </div>
@@ -768,14 +768,14 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
         {/* Preventive Cultural Agronomy */}
         {(actions?.length ?? 0) > 0 && (
-          <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-            <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <div className="mt-5 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <h5 className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               <span>Medidas Culturales y Preventivas:</span>
             </h5>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(actions || []).map((prev: string, idx: number) => (
-                <div key={idx} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300">
+                <div key={idx} className="flex items-start gap-2 text-sm md:text-base text-slate-700 dark:text-slate-200 leading-relaxed">
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">•</span>
                   <span>{prev}</span>
                 </div>
@@ -784,14 +784,16 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           </div>
         )}
 
-        {/* Calibrated Backpack Dosage Badge */}
+        {/* Calibrated Backpack Dosage Banner */}
         {dosage && (
-          <div className="mt-4 p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold">
-              <Calculator className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <div className="mt-5 p-5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border-2 border-amber-400 dark:border-amber-600/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-3 text-amber-900 dark:text-amber-300 font-bold text-lg md:text-xl tracking-wide">
+              <Calculator className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>Dosis Calibrada Bomba 20L:</span>
-              <span className="font-mono text-emerald-900 dark:text-emerald-200 font-extrabold">{dosage}</span>
             </div>
+            <span className="font-mono text-xl md:text-2xl font-black text-amber-950 dark:text-amber-100 bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-amber-300 dark:border-amber-700 shadow-xs">
+              {dosage}
+            </span>
           </div>
         )}
 
@@ -803,17 +805,17 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
         />
 
         {/* Footer Actions & Metadata */}
-        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+        <div className="mt-8 pt-5 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm">
+          <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 font-mono text-xs sm:text-sm">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-slate-400 dark:text-slate-500" />
               <span>{formattedDate()}</span>
             </span>
             <span className="text-slate-300 dark:text-slate-700">|</span>
             <span className="text-slate-400 dark:text-slate-500 truncate max-w-[200px]">ID: {diagnosticId}</span>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+          <div className="flex items-center gap-2.5 self-end sm:self-auto flex-wrap">
             {/* Primary Action Button: Calculate 20L Backpack Dosage & Rain Risk */}
             <button
               type="button"
@@ -824,9 +826,9 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                   setIsDosageModalOpen(true);
                 }
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all text-xs font-bold shadow-emerald-soft active:scale-95"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all text-xs sm:text-sm font-bold shadow-emerald-soft active:scale-95"
             >
-              <Calculator className="w-3.5 h-3.5 text-emerald-200" />
+              <Calculator className="w-4 h-4 text-emerald-200" />
               <span>Calcular Dosis Bomba 20L y Clima</span>
             </button>
 
@@ -841,28 +843,28 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                   );
                 }
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white transition-all text-xs font-bold shadow-sm active:scale-95"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white transition-all text-xs sm:text-sm font-bold shadow-sm active:scale-95"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-emerald-300" />
+              <MessageSquare className="w-4 h-4 text-emerald-300" />
               <span>Hacer Pregunta al Agrónomo IA</span>
             </button>
 
             <button
               type="button"
               onClick={handlePrintOrDownloadPDF}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-all text-xs font-bold shadow-sm active:scale-95"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-all text-xs sm:text-sm font-bold shadow-sm active:scale-95"
               title="Descargar Ficha Técnica PDF o imprimir receta fitosanitaria"
             >
-              <Printer className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+              <Printer className="w-4 h-4 text-sky-600 dark:text-sky-400" />
               <span>Descargar Ficha Técnica PDF / Imprimir</span>
             </button>
 
             <button
               type="button"
               onClick={handleCopySummary}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 transition-all text-xs font-bold shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 transition-all text-xs sm:text-sm font-bold shadow-sm"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-4 h-4" />}
               <span>{copied ? '¡Copiado al Portapapeles!' : 'Copiar Resumen'}</span>
             </button>
           </div>

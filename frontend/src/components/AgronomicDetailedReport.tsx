@@ -69,46 +69,46 @@ export const AgronomicDetailedReport: React.FC<AgronomicDetailedReportProps> = (
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-4 sm:p-5 flex items-center justify-between text-left bg-gradient-to-r from-emerald-500/10 via-transparent to-teal-500/10 hover:from-emerald-500/15 transition-colors border-b border-emerald-200/50 dark:border-emerald-800/40"
+        className="w-full p-4 sm:p-6 flex items-center justify-between text-left bg-gradient-to-r from-emerald-500/10 via-transparent to-teal-500/10 hover:from-emerald-500/15 transition-colors border-b border-emerald-200/50 dark:border-emerald-800/40"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-600 dark:bg-emerald-500 flex items-center justify-center text-white shadow-sm shrink-0">
-            <FileText className="w-5 h-5" />
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-600 dark:bg-emerald-500 flex items-center justify-center text-white shadow-sm shrink-0">
+            <FileText className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h4 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                 Informe Técnico Fitosanitario y Plan de Acción
               </h4>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold border border-emerald-300/50 flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs sm:text-sm font-bold border border-emerald-300/50 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>IA Gemini 2.5 Flash • Validación Agronómica</span>
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-sm sm:text-base font-medium text-slate-600 dark:text-slate-300 mt-1">
               Protocolo agronómico para {cropType}: {diseaseName}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-xs shrink-0 pl-2">
+        <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-sm sm:text-base shrink-0 pl-3">
           <span className="hidden sm:inline">{isExpanded ? 'Plegar' : 'Ver Informe Completo'}</span>
-          {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          {isExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
         </div>
       </button>
 
       {/* Expanded Content Panels */}
       {isExpanded && (
-        <div className="p-5 sm:p-6 space-y-6 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+        <div className="p-5 sm:p-7 space-y-6 sm:space-y-8 text-base md:text-lg leading-relaxed text-slate-700 dark:text-slate-200">
           {/* Bloque 1 & 2 Grid: Epidemiología + Alerta 48H */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Bloque 1: Diagnóstico y Origen Fitosanitario */}
-            <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-2.5 shadow-xs">
-              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-black text-xs uppercase tracking-wide">
-                <CloudRain className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-3.5 shadow-sm">
+              <div className="flex items-center gap-2.5 text-emerald-800 dark:text-emerald-300 font-extrabold text-base sm:text-lg uppercase tracking-wide">
+                <CloudRain className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>1. Condiciones de Infección y Epidemiología</span>
               </div>
-              <p>
+              <p className="text-base sm:text-lg leading-relaxed text-slate-700 dark:text-slate-200">
                 {isLateBlight ? (
                   <>
                     El patógeno <em>Phytophthora infestans</em> prolifera activamente bajo humedad relativa
@@ -139,103 +139,103 @@ export const AgronomicDetailedReport: React.FC<AgronomicDetailedReportProps> = (
                   </>
                 )}
               </p>
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                <Droplets className="w-3.5 h-3.5 text-sky-500" />
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center gap-2 text-sm sm:text-base text-slate-600 dark:text-slate-400 font-semibold">
+                <Droplets className="w-4 h-4 text-sky-500 shrink-0" />
                 <span>Umbral Crítico: Película de agua foliar &gt; 6 horas consecutivas.</span>
               </div>
             </div>
 
             {/* Bloque 2: Pronóstico y Alerta de Dispersión a 48 Horas */}
-            <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-2.5 shadow-xs">
-              <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-black text-xs uppercase tracking-wide">
-                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <div className="p-5 sm:p-6 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/70 space-y-3.5 shadow-sm">
+              <div className="flex items-center gap-2.5 text-amber-900 dark:text-amber-300 font-extrabold text-base sm:text-lg uppercase tracking-wide">
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span>2. Pronóstico y Alerta de Dispersión (48 Horas)</span>
               </div>
-              <p className="text-amber-950 dark:text-amber-200">
+              <p className="text-base sm:text-lg leading-relaxed text-amber-950 dark:text-amber-200">
                 <strong>Alerta Fitosanitaria Inmediata:</strong> Si no se ejecuta una aspersión de control sistémico
                 o biofungicida en las próximas <strong>48 horas</strong>, los esporangios maduros se dispersarán
                 mediante corrientes de viento y salpicaduras de lluvia hacia los surcos y lotes vecinos.
               </p>
-              <p className="text-amber-900 dark:text-amber-300/90 text-[11px]">
+              <p className="text-sm sm:text-base leading-relaxed text-amber-900 dark:text-amber-300/90 font-medium">
                 En condiciones de alta humedad, una sola lesión no tratada puede generar más de <strong>300,000 esporas diarias</strong>,
                 ocasionando el tizoneo ("quemazón") generalizado del cultivo y pérdidas de rendimiento estimadas
                 entre el <strong>60% y el 90%</strong> en menos de 10 días.
               </p>
-              <div className="pt-2 border-t border-amber-200/60 dark:border-amber-800/40 flex items-center gap-2 text-[11px] text-amber-800 dark:text-amber-400 font-bold">
-                <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <div className="pt-3 border-t border-amber-200/60 dark:border-amber-800/40 flex items-center gap-2 text-sm sm:text-base text-amber-800 dark:text-amber-400 font-bold">
+                <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span>Ventana Óptima de Aplicación: Antes de que transcurran 48 horas.</span>
               </div>
             </div>
           </div>
 
           {/* Bloque 3: Protocolo Paso a Paso de Preparación en Bomba de 20 Litros */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-3 shadow-xs">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700">
-              <div className="flex items-center gap-2 text-slate-900 dark:text-white font-black text-xs uppercase tracking-wide">
-                <FlaskConical className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700 flex-wrap gap-2">
+              <div className="flex items-center gap-2.5 text-slate-900 dark:text-white font-extrabold text-base sm:text-xl uppercase tracking-wide">
+                <FlaskConical className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>3. Protocolo Paso a Paso: Preparación en Bomba de Espalda (20 Litros)</span>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold font-mono">
+              <span className="text-xs sm:text-sm px-3 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold font-mono">
                 Orden Oficial de Mezcla
               </span>
             </div>
 
-            <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
-              <li className="p-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
+            <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 pt-1">
+              <li className="p-4 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
                 <div>
-                  <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center mb-1.5">
+                  <span className="w-7 h-7 rounded-full bg-emerald-600 text-white font-black text-xs sm:text-sm flex items-center justify-center mb-2">
                     1
                   </span>
-                  <p className="font-bold text-slate-900 dark:text-white mb-1">Carga de Agua Inicial</p>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+                  <p className="font-bold text-base text-slate-900 dark:text-white mb-1.5">Carga de Agua Inicial</p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
                     Llenar la bomba con <strong>10 litros</strong> de agua limpia (libre de sedimentos). Verificar pH entre <strong>5.5 y 6.5</strong>.
                   </p>
                 </div>
               </li>
 
-              <li className="p-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
+              <li className="p-4 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
                 <div>
-                  <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center mb-1.5">
+                  <span className="w-7 h-7 rounded-full bg-emerald-600 text-white font-black text-xs sm:text-sm flex items-center justify-center mb-2">
                     2
                   </span>
-                  <p className="font-bold text-slate-900 dark:text-white mb-1">Premezcla en Balde</p>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+                  <p className="font-bold text-base text-slate-900 dark:text-white mb-1.5">Premezcla en Balde</p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
                     Disolver en 2L de agua en balde aparte: <strong>50 - 60 ml</strong> del producto químico o <strong>40 g</strong> de biofungicida.
                   </p>
                 </div>
               </li>
 
-              <li className="p-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
+              <li className="p-4 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
                 <div>
-                  <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center mb-1.5">
+                  <span className="w-7 h-7 rounded-full bg-emerald-600 text-white font-black text-xs sm:text-sm flex items-center justify-center mb-2">
                     3
                   </span>
-                  <p className="font-bold text-slate-900 dark:text-white mb-1">Coadyuvante / Adherente</p>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+                  <p className="font-bold text-base text-slate-900 dark:text-white mb-1.5">Coadyuvante / Adherente</p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
                     Agregar <strong>10 ml</strong> de adherente o surfactante agrícola para evitar el lavado por rocío o lluvias posteriores.
                   </p>
                 </div>
               </li>
 
-              <li className="p-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
+              <li className="p-4 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
                 <div>
-                  <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center mb-1.5">
+                  <span className="w-7 h-7 rounded-full bg-emerald-600 text-white font-black text-xs sm:text-sm flex items-center justify-center mb-2">
                     4
                   </span>
-                  <p className="font-bold text-slate-900 dark:text-white mb-1">Aforo a 20 Litros</p>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+                  <p className="font-bold text-base text-slate-900 dark:text-white mb-1.5">Aforo a 20 Litros</p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
                     Verter la premezcla en la bomba, completar hasta los <strong>20 litros</strong> con agua y agitar vigorosamente.
                   </p>
                 </div>
               </li>
 
-              <li className="p-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
+              <li className="p-4 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
                 <div>
-                  <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center mb-1.5">
+                  <span className="w-7 h-7 rounded-full bg-emerald-600 text-white font-black text-xs sm:text-sm flex items-center justify-center mb-2">
                     5
                   </span>
-                  <p className="font-bold text-slate-900 dark:text-white mb-1">Calibración de Boquilla</p>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+                  <p className="font-bold text-base text-slate-900 dark:text-white mb-1.5">Calibración de Boquilla</p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
                     Usar boquilla de <strong>cono hueco</strong> (niebla fina) garantizando cubrimiento homogéneo en haz y envés foliar.
                   </p>
                 </div>
@@ -244,13 +244,13 @@ export const AgronomicDetailedReport: React.FC<AgronomicDetailedReportProps> = (
           </div>
 
           {/* Bloque 4: Periodo de Carencia, Reingreso y Rotación FRAC */}
-          <div className="p-4 rounded-2xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-slate-900 dark:text-white font-black text-xs uppercase tracking-wide">
-                <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <div className="p-5 sm:p-6 rounded-2xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2.5 text-slate-900 dark:text-white font-extrabold text-base sm:text-lg uppercase tracking-wide">
+                <Calendar className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>4. Calendario de Reingreso, Carencia y Rotación</span>
               </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-400 max-w-2xl">
+              <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 max-w-2xl leading-relaxed">
                 • <strong>Reingreso seguro al lote:</strong> 24 horas después de la aplicación portando EPP completo.
                 <br />
                 • <strong>Periodo de Carencia (PC):</strong> Respetar entre <strong>7 y 14 días</strong> de seguridad antes de cosechar.
@@ -260,8 +260,8 @@ export const AgronomicDetailedReport: React.FC<AgronomicDetailedReportProps> = (
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <span className="px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300/60 text-xs font-bold flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="px-3.5 py-2 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300/60 text-sm font-bold flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 <span>BPA Cumplido</span>
               </span>
             </div>
