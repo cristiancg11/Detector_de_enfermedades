@@ -31,6 +31,7 @@ import {
 import { DiagnosticReport } from '../models/DiagnosticReport';
 import { DosageCalculatorModal } from './DosageCalculatorModal';
 import { VoiceNarrationButton } from './VoiceNarrationButton';
+import { AgronomicDetailedReport } from './AgronomicDetailedReport';
 
 /**
  * Defensive string normalizer preventing TypeError: Cannot read properties of undefined (reading 'trim')
@@ -812,6 +813,13 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
             </div>
           </div>
         )}
+
+        {/* Comprehensive AI Technical Agronomic Report */}
+        <AgronomicDetailedReport
+          diagnostic={diagnostic}
+          diseaseName={diseaseName}
+          cropType={cropType}
+        />
 
         {/* Footer Actions & Metadata */}
         <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
