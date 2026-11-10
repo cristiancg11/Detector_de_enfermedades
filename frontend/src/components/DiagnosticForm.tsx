@@ -21,6 +21,7 @@ import { CropType } from '../types';
 import { CropDiagnosticRequest } from '../models/CropDiagnosticRequest';
 import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
 import { useLanguage } from '../context/LanguageContext';
+import { WorkerBridge } from '../utils/WorkerBridge';
 
 export interface DiagnosticFormProps {
   onSubmit: (request: CropDiagnosticRequest, previewUrl: string, fieldNotes?: string) => void;
@@ -80,13 +81,31 @@ export const DiagnosticForm: React.FC<DiagnosticFormProps> = ({
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
       setFormError(null);
+
+      try {
+        const result = await WorkerBridge.getInstance().processImage(file, {
+          maxWidth: 1024,
+          maxHeight: 1024,
+          quality: 0.85,
+        });
+        if (result.success && result.optimizedBlob) {
+          const optimizedFile = new File([result.optimizedBlob], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          });
+          setSelectedFile(optimizedFile);
+        } else {
+          setSelectedFile(file);
+        }
+      } catch {
+        setSelectedFile(file);
+      }
     }
   };
 

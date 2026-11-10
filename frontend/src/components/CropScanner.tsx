@@ -23,9 +23,10 @@ import {
   MicOff,
   FileText,
 } from 'lucide-react';
-import { CropType, WorkerProcessRequest, WorkerProcessResponse } from '../types';
+import { CropType, WorkerProcessResponse } from '../types';
 import { CropDiagnosticRequest } from '../models/CropDiagnosticRequest';
 import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
+import { WorkerBridge } from '../utils/WorkerBridge';
 
 interface CropScannerProps {
   onScanRequest: (request: CropDiagnosticRequest, previewUrl: string) => void;
@@ -122,45 +123,9 @@ export const CropScanner: React.FC<CropScannerProps> = ({
   }, [transcript, clearTranscript]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const workerRef = useRef<Worker | null>(null);
 
-  // Initialize Web Worker
-  useEffect(() => {
-    try {
-      workerRef.current = new Worker(
-        new URL('../workers/imageProcessor.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
-
-      workerRef.current.onmessage = (event: MessageEvent<WorkerProcessResponse>) => {
-        setIsOptimizing(false);
-        const data = event.data;
-
-        if (data.success && data.optimizedBlob) {
-          setOptimizedBlob(data.optimizedBlob);
-          setWorkerMetrics(data);
-          setErrorMsg(null);
-        } else {
-          setErrorMsg(data.error || 'Failed to optimize image via Web Worker.');
-        }
-      };
-
-      workerRef.current.onerror = (err) => {
-        console.error('Image processor worker error:', err);
-        setIsOptimizing(false);
-        setErrorMsg('Web Worker error occurred during background image processing.');
-      };
-    } catch (err) {
-      console.error('Failed to initialize Web Worker:', err);
-    }
-
-    return () => {
-      workerRef.current?.terminate();
-    };
-  }, []);
-
-  // Dispatch image to Web Worker
-  const processImageWithWorker = (file: File) => {
+  // Dispatch image to background Web Worker via WorkerBridge
+  const processImageWithWorker = async (file: File) => {
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
     setIsOptimizing(true);
@@ -168,17 +133,25 @@ export const CropScanner: React.FC<CropScannerProps> = ({
     setWorkerMetrics(null);
     setErrorMsg(null);
 
-    if (workerRef.current) {
-      const payload: WorkerProcessRequest = {
-        imageFile: file,
+    try {
+      const response = await WorkerBridge.getInstance().processImage(file, {
         maxWidth: 1024,
         maxHeight: 1024,
         quality: 0.85,
-      };
-      workerRef.current.postMessage(payload);
-    } else {
-      setOptimizedBlob(file);
+      });
+
       setIsOptimizing(false);
+      if (response.success && response.optimizedBlob) {
+        setOptimizedBlob(response.optimizedBlob);
+        setWorkerMetrics(response);
+        setErrorMsg(null);
+      } else {
+        setErrorMsg(response.error || 'Failed to optimize image via Web Worker.');
+      }
+    } catch (err: any) {
+      console.error('[CropScanner] Image processor worker error:', err);
+      setIsOptimizing(false);
+      setErrorMsg(err.message || 'Web Worker error occurred during background image processing.');
     }
   };
 
