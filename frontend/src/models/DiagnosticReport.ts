@@ -82,6 +82,10 @@ export class DiagnosticReport {
     });
   }
 
+  public static fromRaw(raw: RawDiagnosticResponse, previewImageUrl?: string): DiagnosticReport {
+    return DiagnosticReport.fromJSON(raw, previewImageUrl);
+  }
+
   /**
    * Serializes this entity into a JSON representation for storage or transmission.
    */
@@ -219,9 +223,10 @@ export class DiagnosticReport {
    * Concise text snippet for drawer cards.
    */
   public getSummarySnippet(maxLength: number = 100): string {
-    if (this.diagnosisSummary.length <= maxLength) {
-      return this.diagnosisSummary;
+    const summary = this.diagnosisSummary || '';
+    if (summary.length <= maxLength) {
+      return summary;
     }
-    return `${this.diagnosisSummary.substring(0, maxLength).trim()}...`;
+    return `${summary.substring(0, maxLength).trim()}...`;
   }
 }

@@ -58,7 +58,7 @@ export class FarmPlotHistoryManager {
     const grouped: Record<string, DiagnosticReport[]> = {};
 
     for (const report of all) {
-      const plot = report.plotIdentifier.trim() || 'Unassigned Lot';
+      const plot = (report?.plotIdentifier || '').trim() || 'Unassigned Lot';
       if (!grouped[plot]) {
         grouped[plot] = [];
       }
@@ -72,9 +72,9 @@ export class FarmPlotHistoryManager {
    * Retrieves all diagnostic reports for a specific plot.
    */
   public static getReportsByPlot(plotIdentifier: string): DiagnosticReport[] {
-    const normalized = plotIdentifier.trim().toLowerCase();
+    const normalized = (plotIdentifier || '').trim().toLowerCase();
     return this.getAllReports().filter(
-      (r) => r.plotIdentifier.trim().toLowerCase() === normalized
+      (r) => (r?.plotIdentifier || '').trim().toLowerCase() === normalized
     );
   }
 
