@@ -82,6 +82,10 @@ export class DiagnosticReport {
     });
   }
 
+  public static fromRaw(raw: RawDiagnosticResponse, previewImageUrl?: string): DiagnosticReport {
+    return DiagnosticReport.fromJSON(raw, previewImageUrl);
+  }
+
   /**
    * Serializes this entity into a JSON representation for storage or transmission.
    */

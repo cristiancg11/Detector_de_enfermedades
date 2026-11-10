@@ -8,6 +8,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { AudioSpeechManager } from '../services/AudioSpeechManager';
 
 export interface VoiceAssistantOptions {
   preferredLang?: 'es-CO' | 'es-ES' | 'en-US' | string;
@@ -49,16 +50,7 @@ export interface UseVoiceAssistantReturn {
  * to produce clean, natural-sounding acoustic narration.
  */
 export const cleanMarkdownForSpeech = (text: string): string => {
-  if (!text) return '';
-  return text
-    .replace(/```[\s\S]*?```/g, '') // Fenced code blocks
-    .replace(/`([^`]+)`/g, '$1') // Inline code
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Markdown hyperlinks [text](url)
-    .replace(/[#*_~>]/g, ' ') // Heading, bold, italics, blockquotes
-    .replace(/^\s*[-+*]\s+/gm, ' ') // Unordered list markers
-    .replace(/^\s*\d+\.\s+/gm, ' ') // Ordered list markers
-    .replace(/\s+/g, ' ') // Normalize whitespace
-    .trim();
+  return AudioSpeechManager.getInstance().cleanText(text);
 };
 
 export const useVoiceAssistant = (

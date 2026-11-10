@@ -10,9 +10,9 @@ import { AuthSession } from '../models/AuthSession';
 import { CropDiagnosticRequest } from '../models/CropDiagnosticRequest';
 import { DiagnosticReport } from '../models/DiagnosticReport';
 import { DosageCalculationRequest, DosagePrescription } from '../models/DosagePrescription';
+import { DiagnosticApiClient } from './DiagnosticApiClient';
 import {
   ChatMessage,
-  ChatFollowUpRequest,
   ChatFollowUpResponse,
   RawDiagnosticResponse,
   UserProfile,
@@ -74,35 +74,7 @@ export class ApiService {
     request: CropDiagnosticRequest,
     previewUrl?: string
   ): Promise<DiagnosticReport> {
-    const formData = request.toFormData();
-
-    try {
-      const response = await this.authFetch(
-        `${API_BASE_URL}/diagnose`,
-        {
-          method: 'POST',
-          body: formData,
-        },
-        false
-      );
-
-      if (!response.ok) {
-        let errorMessage = `Server error (${response.status})`;
-        try {
-          const errData = await response.json();
-          errorMessage = errData.detail || errorMessage;
-        } catch {
-          // Ignore JSON parse error
-        }
-        throw new Error(errorMessage);
-      }
-
-      const rawData: RawDiagnosticResponse = await response.json();
-      return DiagnosticReport.fromJSON(rawData, previewUrl);
-    } catch (error: any) {
-      console.warn('Backend connection failed or server unreachable:', error?.message);
-      throw error;
-    }
+    return DiagnosticApiClient.getInstance().sendDiagnostic(request, previewUrl);
   }
 
   /**
@@ -293,40 +265,18 @@ export class ApiService {
   }
 
   /**
-   * Submits a contextual agronomic follow-up inquiry to Gemini 2.5 Flash.
+   * Submits a contextual agronomic follow-up inquiry to Gemini 2.5 Flash via DiagnosticApiClient.
    */
   public static async sendAgronomicChat(
     diagnosticId: string,
     message: string,
     chatHistory: ChatMessage[] = []
   ): Promise<ChatFollowUpResponse> {
-    const payload: ChatFollowUpRequest = {
-      diagnostic_id: diagnosticId,
+    return DiagnosticApiClient.getInstance().sendChatMessage(
+      diagnosticId,
       message,
-      chat_history: chatHistory,
-    };
-
-    const response = await this.authFetch(
-      `${API_BASE_URL}/diagnose/${diagnosticId}/chat`,
-      {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      },
-      true
+      chatHistory
     );
-
-    if (!response.ok) {
-      let errorMsg = `Server error (${response.status})`;
-      try {
-        const errData = await response.json();
-        errorMsg = errData.detail || errorMsg;
-      } catch {
-        // fallback
-      }
-      throw new Error(errorMsg);
-    }
-
-    return response.json();
   }
 
   /**
