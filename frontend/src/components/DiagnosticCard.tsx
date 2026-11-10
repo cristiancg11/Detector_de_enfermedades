@@ -32,6 +32,7 @@ import { DiagnosticReport } from '../models/DiagnosticReport';
 import { DosageCalculatorModal } from './DosageCalculatorModal';
 import { VoiceNarrationButton } from './VoiceNarrationButton';
 import { AgronomicDetailedReport } from './AgronomicDetailedReport';
+import { useLanguage } from '../context/LanguageContext';
 
 /**
  * Defensive string normalizer preventing TypeError: Cannot read properties of undefined (reading 'trim')
@@ -49,7 +50,8 @@ export const safeStr = (val: unknown, fallback: string = ''): string => {
 export const getTreatmentRecommendations = (
   disease: string,
   rawOrganic?: unknown,
-  rawChemical?: unknown
+  rawChemical?: unknown,
+  isEn: boolean = false
 ): { organic: string[]; chemical: string[] } => {
   const isPlaceholder = (txt?: string): boolean => {
     if (!txt || !txt.trim()) return true;
@@ -89,16 +91,26 @@ export const getTreatmentRecommendations = (
     lower.includes('late blight')
   ) {
     if (organic.length === 0) {
-      organic = [
-        'Aplicar biofungicida a base de Trichoderma harzianum (2 g/L) o extracto de cola de caballo (Equisetum). Complementar con Caldo Bordelés al 1% en días secos.',
-        'Mejorar la aireación y drenaje del lote para evitar acumulación de humedad relativa > 90%.',
-      ];
+      organic = isEn
+        ? [
+            'Apply Trichoderma harzianum (2 g/L) bio-fungicide or horsetail (Equisetum) extract. Complement with 1% Bordeaux mixture on dry days.',
+            'Improve field aeration and drainage to avoid relative humidity stagnation above 90%.',
+          ]
+        : [
+            'Aplicar biofungicida a base de Trichoderma harzianum (2 g/L) o extracto de cola de caballo (Equisetum). Complementar con Caldo Bordelés al 1% en días secos.',
+            'Mejorar la aireación y drenaje del lote para evitar acumulación de humedad relativa > 90%.',
+          ];
     }
     if (chemical.length === 0) {
-      chemical = [
-        'Aplicar fungicida de acción sistémica y contacto: Metalaxil-M + Mancozeb (Ridomil Gold) o Dimetomorf.',
-        'Rotar con Cymoxanil o Propamocarb para evitar la generación de resistencia fúngica.',
-      ];
+      chemical = isEn
+        ? [
+            'Apply systemic and contact fungicide: Metalaxyl-M + Mancozeb (Ridomil Gold) or Dimethomorph.',
+            'Rotate with Cymoxanil or Propamocarb to prevent fungal resistance development.',
+          ]
+        : [
+            'Aplicar fungicida de acción sistémica y contacto: Metalaxil-M + Mancozeb (Ridomil Gold) o Dimetomorf.',
+            'Rotar con Cymoxanil o Propamocarb para evitar la generación de resistencia fúngica.',
+          ];
     }
   }
   // Alternaria solani (Tizón Temprano / Early Blight)
@@ -109,16 +121,26 @@ export const getTreatmentRecommendations = (
     lower.includes('early blight')
   ) {
     if (organic.length === 0) {
-      organic = [
-        'Aplicar bioinsumos a base de Bacillus subtilis o extracto vegetal de canela y ajo para frenar la esporulación.',
-        'Eliminar y destruir los foliolos basales con manchas en diana para reducir el inóculo primario.',
-      ];
+      organic = isEn
+        ? [
+            'Apply Bacillus subtilis bio-fungicide or botanical cinnamon and garlic extracts to halt sporulation.',
+            'Prune and destroy lower target-spotted foliage to diminish primary inoculum.',
+          ]
+        : [
+            'Aplicar bioinsumos a base de Bacillus subtilis o extracto vegetal de canela y ajo para frenar la esporulación.',
+            'Eliminar y destruir los foliolos basales con manchas en diana para reducir el inóculo primario.',
+          ];
     }
     if (chemical.length === 0) {
-      chemical = [
-        'Aplicar Difenoconazol o Clorotalonil en aspersión foliar, garantizando cubrimiento en el envés de las hojas.',
-        'Complementar con azoxistrobina respetando el periodo de carencia (14 días).',
-      ];
+      chemical = isEn
+        ? [
+            'Apply Difenoconazole or Chlorothalonil foliar spray ensuring thorough undersurface coverage.',
+            'Complement with Azoxystrobin respecting 14-day pre-harvest interval.',
+          ]
+        : [
+            'Aplicar Difenoconazol o Clorotalonil en aspersión foliar, garantizando cubrimiento en el envés de las hojas.',
+            'Complementar con azoxistrobina respetando el periodo de carencia (14 días).',
+          ];
     }
   }
   // Roya del Café (Hemileia vastatrix)
@@ -129,16 +151,26 @@ export const getTreatmentRecommendations = (
     lower.includes('rust')
   ) {
     if (organic.length === 0) {
-      organic = [
-        'Aspersión foliar de Caldo Visosa o caldo de ceniza al 0.5% y biofertilizante enriquecido con zinc y boro.',
-        'Poda sanitaria de ramas bajas improductivas y regulación del sombrío en cafetales.',
-      ];
+      organic = isEn
+        ? [
+            'Foliar spray of 0.5% wood ash broth or bio-fertilizer enriched with zinc and boron.',
+            'Sanitary pruning of unproductive lower branches and regulation of coffee shade canopy.',
+          ]
+        : [
+            'Aspersión foliar de Caldo Visosa o caldo de ceniza al 0.5% y biofertilizante enriquecido con zinc y boro.',
+            'Poda sanitaria de ramas bajas improductivas y regulación del sombrío en cafetales.',
+          ];
     }
     if (chemical.length === 0) {
-      chemical = [
-        'Aplicar fungicida sistémico del grupo triazol (Ciproconazol o Epoxiconazol) en floración o grano verde.',
-        'Aplicación preventiva de Oxicloruro de Cobre o Hidróxido de Cobre antes del inicio de lluvias.',
-      ];
+      chemical = isEn
+        ? [
+            'Apply triazole systemic fungicide (Cyproconazole or Epoxiconazole) during flowering or green bean phase.',
+            'Preventive application of Copper Oxychloride or Copper Hydroxide prior to rainfall onset.',
+          ]
+        : [
+            'Aplicar fungicida sistémico del grupo triazol (Ciproconazol o Epoxiconazol) en floración o grano verde.',
+            'Aplicación preventiva de Oxicloruro de Cobre o Hidróxido de Cobre antes del inicio de lluvias.',
+          ];
     }
   }
   // Mancha de Asfalto en Maíz (Phyllachora maydis)
@@ -149,16 +181,26 @@ export const getTreatmentRecommendations = (
     lower.includes('tar spot')
   ) {
     if (organic.length === 0) {
-      organic = [
-        'Incorporar biopreparados de Trichoderma y lixiviados de lombriz para fortalecer la masa foliar y resistencia de la planta.',
-        'Monitoreo semanal del estrato medio del maíz antes de la emisión de espigas.',
-      ];
+      organic = isEn
+        ? [
+            'Incorporate Trichoderma bio-preparations and worm tea leachates to bolster foliar canopy vigor.',
+            'Weekly monitoring of middle corn canopy before tasseling.',
+          ]
+        : [
+            'Incorporar biopreparados de Trichoderma y lixiviados de lombriz para fortalecer la masa foliar y resistencia de la planta.',
+            'Monitoreo semanal del estrato medio del maíz antes de la emisión de espigas.',
+          ];
     }
     if (chemical.length === 0) {
-      chemical = [
-        'Aplicar mezcla de Azoxistrobina + Ciproconazol en floración temprana o aparición de micro-manchas.',
-        'Aplicar Piraclostrobina + Epoxiconazol en lotes de alta presión o alta humedad.',
-      ];
+      chemical = isEn
+        ? [
+            'Apply Azoxystrobin + Cyproconazole mixture at early flowering or micro-lesion onset.',
+            'Apply Pyraclostrobin + Epoxiconazole in high-pressure or persistent humidity parcels.',
+          ]
+        : [
+            'Aplicar mezcla de Azoxistrobina + Ciproconazol en floración temprana o aparición de micro-manchas.',
+            'Aplicar Piraclostrobina + Epoxiconazol en lotes de alta presión o alta humedad.',
+          ];
     }
   }
   // Bacteriosis / Ralstonia / Pectobacterium / Xanthomonas
@@ -169,29 +211,47 @@ export const getTreatmentRecommendations = (
     lower.includes('xanthomonas')
   ) {
     if (organic.length === 0) {
-      organic = [
-        'Aplicar extracto de semillas de cítricos (ácido ascórbico y cítrico) y lixiviados desinfectantes.',
-        'Solarizar el suelo y aislar plantas marchitas con cal viva en el punto de infección.',
-      ];
+      organic = isEn
+        ? [
+            'Apply citrus seed extract (ascorbic and citric acid) and disinfectant bio-leachates.',
+            'Solarize parcel soil and isolate wilted plants with agricultural lime at infection hotspots.',
+          ]
+        : [
+            'Aplicar extracto de semillas de cítricos (ácido ascórbico y cítrico) y lixiviados desinfectantes.',
+            'Solarizar el suelo y aislar plantas marchitas con cal viva en el punto de infección.',
+          ];
     }
     if (chemical.length === 0) {
-      chemical = [
-        'Aplicar bactericida cúprico como Sulfato de Cobre Pentahidratado o Kasugamicina.',
-        'Desinfectar machetes, azadones y tijeras con hipoclorito al 5% entre planta y planta.',
-      ];
+      chemical = isEn
+        ? [
+            'Apply cupric bactericide such as Copper Sulfate Pentahydrate or Kasugamycin.',
+            'Disinfect pruning tools and machetes with 5% sodium hypochlorite between rows.',
+          ]
+        : [
+            'Aplicar bactericida cúprico como Sulfato de Cobre Pentahidratado o Kasugamicina.',
+            'Desinfectar machetes, azadones y tijeras con hipoclorito al 5% entre planta y planta.',
+          ];
     }
   }
   // General / fallback
   else {
     if (organic.length === 0) {
-      organic = [
-        'Eliminar hojas infectadas, mejorar aireación del lote y aplicar extracto vegetal preventivo o biofertilizante foliar enriquecido con silicio.',
-      ];
+      organic = isEn
+        ? [
+            'Remove infected leaves, improve field airflow, and apply preventive biofungicides or silicon-enriched foliar tonic.',
+          ]
+        : [
+            'Eliminar hojas infectadas, mejorar aireación del lote y aplicar extracto vegetal preventivo o biofertilizante foliar enriquecido con silicio.',
+          ];
     }
     if (chemical.length === 0) {
-      chemical = [
-        'Consultar al agrónomo técnico de confianza para seleccionar un ingrediente activo específico según el periodo vegetativo.',
-      ];
+      chemical = isEn
+        ? [
+            'Consult your trusted technical agronomist to select an appropriate active ingredient for this vegetative stage.',
+          ]
+        : [
+            'Consultar al agrónomo técnico de confianza para seleccionar un ingrediente activo específico según el periodo vegetativo.',
+          ];
     }
   }
 
@@ -213,6 +273,9 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
   onOpenChat,
   onOpenDosageCalculator,
 }) => {
+  const { language, t } = useLanguage();
+  const isEn = language === 'en';
+
   const [activeTab, setActiveTab] = useState<'split' | 'organic' | 'chemical'>('split');
   const [copied, setCopied] = useState<boolean>(false);
   const [isDosageModalOpen, setIsDosageModalOpen] = useState<boolean>(false);
@@ -226,10 +289,12 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
         </div>
         <div>
           <h3 className="text-lg font-black text-slate-900 dark:text-white">
-            Analizando tejido foliar con IA Gemini...
+            {isEn ? 'Analyzing Crop Foliage with Gemini AI...' : 'Analizando tejido foliar con IA Gemini...'}
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">
-            Aplicando modelos convolucionales de fitopatología andina y recuperando rutas orgánicas vs. químicas.
+            {isEn
+              ? 'Applying Andean phytopathology vision models and retrieving biological vs. chemical pathways.'
+              : 'Aplicando modelos convolucionales de fitopatología andina y recuperando rutas orgánicas vs. químicas.'}
           </p>
         </div>
       </div>
@@ -244,10 +309,14 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           <AlertOctagon className="w-6 h-6" />
         </div>
         <div>
-          <h3 className="text-base font-bold text-rose-900 dark:text-rose-200">Aviso del Servicio de Diagnóstico</h3>
+          <h3 className="text-base font-bold text-rose-900 dark:text-rose-200">
+            {t('diagnosticServiceNotice')}
+          </h3>
           <p className="text-xs text-rose-700 dark:text-rose-300 mt-1 leading-relaxed">{error}</p>
           <p className="text-[11px] text-rose-500 dark:text-rose-400 mt-2">
-            Error en el servicio de diagnóstico: por favor verifique la conexión del servidor en http://localhost:8000
+            {isEn
+              ? 'Diagnostic service warning: please check backend connectivity at http://localhost:8000'
+              : 'Error en el servicio de diagnóstico: por favor verifique la conexión del servidor en http://localhost:8000'}
           </p>
         </div>
       </div>
@@ -262,10 +331,10 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           <Sprout className="w-8 h-8" />
         </div>
         <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-          Listo para Diagnóstico Fitosanitario Andino
+          {t('diagnosticReadyTitle')}
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mt-1">
-          Selecciona tu cultivo, indica el lote o parcela y sube una foto de la hoja para activar el análisis con IA Gemini.
+          {t('diagnosticReadyDesc')}
         </p>
       </div>
     );
@@ -291,7 +360,26 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
       comm !== 'No determinada' &&
       comm !== 'Patología foliar no determinada'
     ) {
+      if (isEn && (comm.includes('Gota') || comm.includes('Tizón Tardío'))) {
+        return 'Late Blight (Potato Blight)';
+      }
       return comm;
+    }
+    if (isEn) {
+      if (sci.includes('phytophthora') || sci.includes('infestans')) return 'Late Blight (Potato Blight)';
+      if (sci.includes('alternaria') || sci.includes('solani')) return 'Early Blight (Alternaria)';
+      if (sci.includes('hemileia') || sci.includes('vastatrix')) return 'Coffee Leaf Rust';
+      if (sci.includes('botrytis') || sci.includes('cinerea')) return 'Gray Mold (Botrytis)';
+      if (sci.includes('xanthomonas')) return 'Bacterial Spot';
+      if (sci.includes('puccinia') || sci.includes('sorghi')) return 'Common Rust of Corn';
+      if (sci.includes('phyllachora') || sci.includes('maydis')) return 'Corn Tar Spot Complex';
+      if (sci.includes('fusarium')) return 'Fusarium Wilt';
+      if (sci.includes('cercospora')) return 'Cercospora Leaf Spot';
+      return (
+        diag?.scientific_name ||
+        diag?.scientificName ||
+        'Specialized Crop Health Assessment'
+      );
     }
     if (sci.includes('phytophthora') || sci.includes('infestans')) return 'Tizón Tardío (Gota de la Papa)';
     if (sci.includes('alternaria') || sci.includes('solani')) return 'Tizón Temprano (Alternaria)';
@@ -375,7 +463,8 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
   const treatments = getTreatmentRecommendations(
     `${scientificName} ${diseaseName}`,
     rawOrganic,
-    rawChemical
+    rawChemical,
+    isEn
   );
 
   const organicTreatmentList: string[] = treatments.organic;
@@ -383,7 +472,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
   const dosage = safeStr(
     diagnostic?.dosage_backpack_20l || diagnostic?.dosage,
-    '50 - 60 ml por tanque de 20 litros.'
+    isEn ? '50 - 60 ml per 20-liter tank.' : '50 - 60 ml por tanque de 20 litros.'
   );
   const cropType = safeStr(diagnostic?.crop_type || diagnostic?.cropType, 'Potato');
   const plotIdentifier = safeStr(diagnostic?.plot_identifier || diagnostic?.plotIdentifier, 'Plot A');
@@ -413,15 +502,30 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
     const pathogen = safeStr(diagnostic?.pathogen_type || diagnostic?.pathogenType, 'HEALTHY').toUpperCase();
     switch (pathogen) {
       case 'FUNGUS':
-        return { label: 'PATÓGENO FÚNGICO (HONGO)', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300' };
+        return {
+          label: isEn ? 'FUNGAL PATHOGEN (FUNGUS)' : 'PATÓGENO FÚNGICO (HONGO)',
+          badgeClass: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700',
+        };
       case 'BACTERIA':
-        return { label: 'INFECCIÓN BACTERIANA', badgeClass: 'bg-rose-100 text-rose-800 border-rose-300' };
+        return {
+          label: isEn ? 'BACTERIAL INFECTION' : 'INFECCIÓN BACTERIANA',
+          badgeClass: 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-700',
+        };
       case 'VIRUS':
-        return { label: 'ENFERMEDAD VIRAL', badgeClass: 'bg-purple-100 text-purple-800 border-purple-300' };
+        return {
+          label: isEn ? 'VIRAL DISEASE' : 'ENFERMEDAD VIRAL',
+          badgeClass: 'bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-700',
+        };
       case 'PEST':
-        return { label: 'DAÑO POR PLAGAS / INSECTOS', badgeClass: 'bg-orange-100 text-orange-800 border-orange-300' };
+        return {
+          label: isEn ? 'PEST / INSECT DAMAGE' : 'DAÑO POR PLAGAS / INSECTOS',
+          badgeClass: 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-700',
+        };
       default:
-        return { label: 'TEJIDO SANO', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
+        return {
+          label: isEn ? 'HEALTHY TISSUE' : 'TEJIDO SANO',
+          badgeClass: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700',
+        };
     }
   };
   const pathogenBadge = getSafePathogenBadge();
@@ -522,7 +626,14 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               {severityLevel === 'CRITICAL' && <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />}
               {severityLevel === 'MODERATE' && <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
               {severityLevel === 'LOW' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />}
-              Severidad: {severityLevel === 'CRITICAL' ? 'Crítica' : severityLevel === 'MODERATE' ? 'Moderada' : 'Leve'}
+              <span>
+                {isEn ? 'Severity:' : 'Severidad:'}{' '}
+                {severityLevel === 'CRITICAL'
+                  ? (isEn ? 'Critical' : 'Crítica')
+                  : severityLevel === 'MODERATE'
+                  ? (isEn ? 'Moderate' : 'Moderada')
+                  : (isEn ? 'Low' : 'Leve')}
+              </span>
             </span>
 
             {/* Pathogen Type Badge */}
@@ -606,7 +717,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           </div>
           <div className="text-right sm:text-center mt-0 sm:mt-2">
             <span className="text-[11px] font-black uppercase text-emerald-800 dark:text-emerald-300 tracking-wider">
-              Confianza IA
+              {t('diagnosticConfidence')}
             </span>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Gemini 2.5 Flash</p>
           </div>
@@ -618,7 +729,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
         <div className="py-4 border-b border-slate-100 dark:border-slate-800">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>Síntomas Fenotípicos Observados:</span>
+            <span>{isEn ? 'Observed Phenotypic Symptoms:' : 'Síntomas Fenotípicos Observados:'}</span>
           </h4>
           <div className="flex flex-wrap gap-2">
             {symptoms.map((symptom, idx) => (
@@ -643,10 +754,12 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
             </div>
             <div>
               <h4 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Plan de Manejo Fitosanitario
+                {t('phytosanitaryManagementPlan')}
               </h4>
               <p className="text-sm md:text-base text-slate-600 dark:text-slate-300 font-medium mt-0.5">
-                Tratamiento ecológico vs. intervención química convencional
+                {isEn
+                  ? 'Biological & organic solutions vs. targeted chemical intervention'
+                  : 'Tratamiento ecológico vs. intervención química convencional'}
               </p>
             </div>
           </div>
@@ -662,7 +775,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              Vista Dividida
+              {isEn ? 'Split View' : 'Vista Dividida'}
             </button>
             <button
               type="button"
@@ -673,7 +786,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              Solo Orgánico
+              {isEn ? 'Organic Only' : 'Solo Orgánico'}
             </button>
             <button
               type="button"
@@ -684,7 +797,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              Solo Químico
+              {isEn ? 'Chemical Only' : 'Solo Químico'}
             </button>
           </div>
         </div>
@@ -698,10 +811,10 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-emerald-200 dark:border-emerald-800/60">
                   <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-extrabold text-sm md:text-base uppercase tracking-wider">
                     <Sprout className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    <span>🌱 CONTROL BIOLÓGICO Y ECOLÓGICO</span>
+                    <span>{isEn ? '🌱 BIOLOGICAL & ORGANIC CONTROL' : '🌱 CONTROL BIOLÓGICO Y ECOLÓGICO'}</span>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
-                    Amigable con el ambiente
+                    {isEn ? 'Eco-friendly' : 'Amigable con el ambiente'}
                   </span>
                 </div>
 
@@ -715,7 +828,9 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                     ))
                   ) : (
                     <li className="text-sm md:text-base text-slate-500 dark:text-slate-400 italic">
-                      No se requieren intervenciones biológicas específicas para esta fase del patógeno.
+                      {isEn
+                        ? 'No specific biological interventions required for this pathogen phase.'
+                        : 'No se requieren intervenciones biológicas específicas para esta fase del patógeno.'}
                     </li>
                   )}
                 </ul>
@@ -723,7 +838,11 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
               <div className="mt-4 pt-3 border-t border-emerald-200/80 dark:border-emerald-800/60 text-xs md:text-sm text-emerald-800 dark:text-emerald-300 flex items-center gap-2 font-medium">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Sin residualidad química; apto para normas de producción limpia.</span>
+                <span>
+                  {isEn
+                    ? 'Zero chemical residue; compliant with clean production and organic certifications.'
+                    : 'Sin residualidad química; apto para normas de producción limpia.'}
+                </span>
               </div>
             </div>
           )}
@@ -735,10 +854,10 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-sky-200 dark:border-sky-800/60">
                   <div className="flex items-center gap-2 text-sky-800 dark:text-sky-300 font-extrabold text-sm md:text-base uppercase tracking-wider">
                     <FlaskConical className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-                    <span>🧪 CONTROL QUÍMICO FOCALIZADO</span>
+                    <span>{isEn ? '🧪 TARGETED CHEMICAL CONTROL' : '🧪 CONTROL QUÍMICO FOCALIZADO'}</span>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 text-xs font-bold">
-                    Acción Sistémica / Contacto
+                    {isEn ? 'Systemic / Contact Action' : 'Acción Sistémica / Contacto'}
                   </span>
                 </div>
 
@@ -752,7 +871,9 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                     ))
                   ) : (
                     <li className="text-sm md:text-base text-slate-500 dark:text-slate-400 italic">
-                      No se requiere intervención con plaguicidas sintéticos.
+                      {isEn
+                        ? 'No synthetic pesticide intervention required.'
+                        : 'No se requiere intervención con plaguicidas sintéticos.'}
                     </li>
                   )}
                 </ul>
@@ -760,7 +881,11 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
               <div className="mt-4 pt-3 border-t border-sky-200/80 dark:border-sky-800/60 text-xs md:text-sm text-sky-800 dark:text-sky-300 flex items-center gap-2 font-medium">
                 <AlertTriangle className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                <span>Usar equipo de protección personal (EPP) y respetar el periodo de carencia antes de cosechar.</span>
+                <span>
+                  {isEn
+                    ? 'Wear mandatory PPE and observe the pre-harvest interval before harvesting.'
+                    : 'Usar equipo de protección personal (EPP) y respetar el periodo de carencia antes de cosechar.'}
+                </span>
               </div>
             </div>
           )}
@@ -771,7 +896,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           <div className="mt-5 p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <h5 className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              <span>Medidas Culturales y Preventivas:</span>
+              <span>{isEn ? 'Cultural & Preventive Field Measures:' : 'Medidas Culturales y Preventivas:'}</span>
             </h5>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(actions || []).map((prev: string, idx: number) => (
@@ -789,7 +914,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
           <div className="mt-5 p-5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border-2 border-amber-400 dark:border-amber-600/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
             <div className="flex items-center gap-3 text-amber-900 dark:text-amber-300 font-bold text-lg md:text-xl tracking-wide">
               <Calculator className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span>Dosis Calibrada Bomba 20L:</span>
+              <span>{isEn ? 'Calibrated 20L Backpack Dosage:' : 'Dosis Calibrada Bomba 20L:'}</span>
             </div>
             <span className="font-mono text-xl md:text-2xl font-black text-amber-950 dark:text-amber-100 bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-amber-300 dark:border-amber-700 shadow-xs">
               {dosage}
@@ -829,7 +954,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all text-xs sm:text-sm font-bold shadow-emerald-soft active:scale-95"
             >
               <Calculator className="w-4 h-4 text-emerald-200" />
-              <span>Calcular Dosis Bomba 20L y Clima</span>
+              <span>{t('backpackDosage')}</span>
             </button>
 
             <button
@@ -846,7 +971,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white transition-all text-xs sm:text-sm font-bold shadow-sm active:scale-95"
             >
               <MessageSquare className="w-4 h-4 text-emerald-300" />
-              <span>Hacer Pregunta al Agrónomo IA</span>
+              <span>{t('diagnosticBtnChat')}</span>
             </button>
 
             <button
@@ -855,20 +980,20 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
                 window.dispatchEvent(new CustomEvent('open-consultation-history'));
               }}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-all text-xs sm:text-sm font-bold shadow-sm active:scale-95"
-              title="Abrir historial de consultas previas"
+              title={isEn ? 'Open consultation history' : 'Abrir historial de consultas previas'}
             >
               <span>📋</span>
-              <span>Historial</span>
+              <span>{isEn ? 'History' : 'Historial'}</span>
             </button>
 
             <button
               type="button"
               onClick={handlePrintOrDownloadPDF}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-all text-xs sm:text-sm font-bold shadow-sm active:scale-95"
-              title="Descargar Ficha Técnica PDF o imprimir receta fitosanitaria"
+              title={isEn ? 'Download PDF Technical Sheet or print prescription' : 'Descargar Ficha Técnica PDF o imprimir receta fitosanitaria'}
             >
               <Printer className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-              <span>Descargar Ficha Técnica PDF / Imprimir</span>
+              <span>{isEn ? 'Download PDF Sheet / Print' : 'Descargar Ficha Técnica PDF / Imprimir'}</span>
             </button>
 
             <button
@@ -876,8 +1001,16 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               onClick={handleCopySummary}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 transition-all text-xs sm:text-sm font-bold shadow-sm"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-4 h-4" />}
-              <span>{copied ? '¡Copiado al Portapapeles!' : 'Copiar Resumen'}</span>
+              {copied ? (
+                <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+              <span>
+                {copied
+                  ? (isEn ? 'Copied to Clipboard!' : '¡Copiado al Portapapeles!')
+                  : (isEn ? 'Copy Summary' : 'Copiar Resumen')}
+              </span>
             </button>
           </div>
         </div>

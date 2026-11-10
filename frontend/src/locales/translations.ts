@@ -133,6 +133,19 @@ export interface TranslationDictionary {
   dosageProjectedLoss: string;
   dosagePPE: string;
   dosageClose: string;
+
+  // Key Phytosanitary & Action Tokens
+  phytosanitaryManagementPlan: string;
+  biologicalControl: string;
+  chemicalControl: string;
+  backpackDosage: string;
+  consultationHistory: string;
+  signOut: string;
+  technicalReportTitle: string;
+  infectionConditions: string;
+  dispersalPrognosis: string;
+  mixingProtocol: string;
+  rotationCalendar: string;
 }
 
 export const translations: Record<SupportedLanguage, TranslationDictionary> = {
@@ -265,6 +278,19 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     dosageProjectedLoss: 'Pérdida proyectada sin intervención oportuna',
     dosagePPE: 'Equipo de Protección Personal (EPP) Obligatorio',
     dosageClose: 'Cerrar Calculadora',
+
+    // Key Phytosanitary & Action Tokens
+    phytosanitaryManagementPlan: 'Plan de Manejo Fitosanitario',
+    biologicalControl: 'Control Biológico y Orgánico',
+    chemicalControl: 'Control Químico Focalizado',
+    backpackDosage: 'Calcular Dosis Bomba 20L y Clima',
+    consultationHistory: 'Historial de Consultas',
+    signOut: 'Cerrar Sesión',
+    technicalReportTitle: 'Informe Técnico Fitosanitario y Plan de Acción',
+    infectionConditions: '1. Condiciones de Infección y Epidemiología',
+    dispersalPrognosis: '2. Pronóstico y Alerta de Dispersión (48 Horas)',
+    mixingProtocol: '3. Protocolo Paso a Paso: Preparación en Bomba de Espalda (20 Litros)',
+    rotationCalendar: '4. Calendario de Reingreso, Carencia y Rotación',
   },
   en: {
     // Navigation & Controls
@@ -395,6 +421,19 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     dosageProjectedLoss: 'Estimated loss without timely intervention',
     dosagePPE: 'Mandatory Personal Protective Equipment (PPE)',
     dosageClose: 'Close Calculator',
+
+    // Key Phytosanitary & Action Tokens
+    phytosanitaryManagementPlan: 'Phytosanitary Management Plan',
+    biologicalControl: 'Biological & Organic Control',
+    chemicalControl: 'Targeted Chemical Control',
+    backpackDosage: 'Compute 20L Backpack Dosage & Weather',
+    consultationHistory: 'Consultation History',
+    signOut: 'Sign Out',
+    technicalReportTitle: 'Phytosanitary Technical Report & Action Plan',
+    infectionConditions: '1. Infection Conditions & Epidemiology',
+    dispersalPrognosis: '2. 48-Hour Dispersal Prognosis & Outbreak Alert',
+    mixingProtocol: '3. Step-by-Step Protocol: 20L Backpack Sprayer Tank Preparation',
+    rotationCalendar: '4. Re-entry, Pre-Harvest Interval & FRAC Rotation Schedule',
   },
 };
 
