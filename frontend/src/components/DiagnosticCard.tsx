@@ -41,6 +41,162 @@ export const safeStr = (val: unknown, fallback: string = ''): string => {
   return String(val).trim();
 };
 
+/**
+ * Resolves organic and chemical treatments from API payload, providing rich,
+ * authentic agronomic fallbacks in Spanish when backend returns empty or placeholder text.
+ */
+export const getTreatmentRecommendations = (
+  disease: string,
+  rawOrganic?: unknown,
+  rawChemical?: unknown
+): { organic: string[]; chemical: string[] } => {
+  const isPlaceholder = (txt?: string): boolean => {
+    if (!txt || !txt.trim()) return true;
+    const lower = txt.toLowerCase();
+    return (
+      lower.includes('no specific') ||
+      lower.includes('no synthetic') ||
+      lower.includes('no se requiere') ||
+      lower.includes('consultar agrónomo de zona') ||
+      lower.includes('aplicación de bioinsumos o extractos preventivos') ||
+      lower.includes('placeholder')
+    );
+  };
+
+  const toList = (raw: unknown): string[] => {
+    if (Array.isArray(raw)) {
+      return raw.map((item) => safeStr(item)).filter((s) => !isPlaceholder(s));
+    }
+    if (typeof raw === 'string' && !isPlaceholder(raw)) {
+      return [safeStr(raw)];
+    }
+    return [];
+  };
+
+  let organic = toList(rawOrganic);
+  let chemical = toList(rawChemical);
+
+  const lower = (disease || '').toLowerCase();
+
+  // Phytophthora infestans (Gota / Tizón Tardío)
+  if (
+    lower.includes('phytophthora') ||
+    lower.includes('infestans') ||
+    lower.includes('gota') ||
+    lower.includes('tardío') ||
+    lower.includes('tardio') ||
+    lower.includes('late blight')
+  ) {
+    if (organic.length === 0) {
+      organic = [
+        'Aplicar biofungicida a base de Trichoderma harzianum (2 g/L) o extracto de cola de caballo (Equisetum). Complementar con Caldo Bordelés al 1% en días secos.',
+        'Mejorar la aireación y drenaje del lote para evitar acumulación de humedad relativa > 90%.',
+      ];
+    }
+    if (chemical.length === 0) {
+      chemical = [
+        'Aplicar fungicida de acción sistémica y contacto: Metalaxil-M + Mancozeb (Ridomil Gold) o Dimetomorf.',
+        'Rotar con Cymoxanil o Propamocarb para evitar la generación de resistencia fúngica.',
+      ];
+    }
+  }
+  // Alternaria solani (Tizón Temprano / Early Blight)
+  else if (
+    lower.includes('alternaria') ||
+    lower.includes('solani') ||
+    lower.includes('temprano') ||
+    lower.includes('early blight')
+  ) {
+    if (organic.length === 0) {
+      organic = [
+        'Aplicar bioinsumos a base de Bacillus subtilis o extracto vegetal de canela y ajo para frenar la esporulación.',
+        'Eliminar y destruir los foliolos basales con manchas en diana para reducir el inóculo primario.',
+      ];
+    }
+    if (chemical.length === 0) {
+      chemical = [
+        'Aplicar Difenoconazol o Clorotalonil en aspersión foliar, garantizando cubrimiento en el envés de las hojas.',
+        'Complementar con azoxistrobina respetando el periodo de carencia (14 días).',
+      ];
+    }
+  }
+  // Roya del Café (Hemileia vastatrix)
+  else if (
+    lower.includes('hemileia') ||
+    lower.includes('vastatrix') ||
+    lower.includes('roya') ||
+    lower.includes('rust')
+  ) {
+    if (organic.length === 0) {
+      organic = [
+        'Aspersión foliar de Caldo Visosa o caldo de ceniza al 0.5% y biofertilizante enriquecido con zinc y boro.',
+        'Poda sanitaria de ramas bajas improductivas y regulación del sombrío en cafetales.',
+      ];
+    }
+    if (chemical.length === 0) {
+      chemical = [
+        'Aplicar fungicida sistémico del grupo triazol (Ciproconazol o Epoxiconazol) en floración o grano verde.',
+        'Aplicación preventiva de Oxicloruro de Cobre o Hidróxido de Cobre antes del inicio de lluvias.',
+      ];
+    }
+  }
+  // Mancha de Asfalto en Maíz (Phyllachora maydis)
+  else if (
+    lower.includes('phyllachora') ||
+    lower.includes('maydis') ||
+    lower.includes('asfalto') ||
+    lower.includes('tar spot')
+  ) {
+    if (organic.length === 0) {
+      organic = [
+        'Incorporar biopreparados de Trichoderma y lixiviados de lombriz para fortalecer la masa foliar y resistencia de la planta.',
+        'Monitoreo semanal del estrato medio del maíz antes de la emisión de espigas.',
+      ];
+    }
+    if (chemical.length === 0) {
+      chemical = [
+        'Aplicar mezcla de Azoxistrobina + Ciproconazol en floración temprana o aparición de micro-manchas.',
+        'Aplicar Piraclostrobina + Epoxiconazol en lotes de alta presión o alta humedad.',
+      ];
+    }
+  }
+  // Bacteriosis / Ralstonia / Pectobacterium / Xanthomonas
+  else if (
+    lower.includes('bacteri') ||
+    lower.includes('ralstonia') ||
+    lower.includes('pectobacterium') ||
+    lower.includes('xanthomonas')
+  ) {
+    if (organic.length === 0) {
+      organic = [
+        'Aplicar extracto de semillas de cítricos (ácido ascórbico y cítrico) y lixiviados desinfectantes.',
+        'Solarizar el suelo y aislar plantas marchitas con cal viva en el punto de infección.',
+      ];
+    }
+    if (chemical.length === 0) {
+      chemical = [
+        'Aplicar bactericida cúprico como Sulfato de Cobre Pentahidratado o Kasugamicina.',
+        'Desinfectar machetes, azadones y tijeras con hipoclorito al 5% entre planta y planta.',
+      ];
+    }
+  }
+  // General / fallback
+  else {
+    if (organic.length === 0) {
+      organic = [
+        'Eliminar hojas infectadas, mejorar aireación del lote y aplicar extracto vegetal preventivo o biofertilizante foliar enriquecido con silicio.',
+      ];
+    }
+    if (chemical.length === 0) {
+      chemical = [
+        'Consultar al agrónomo técnico de confianza para seleccionar un ingrediente activo específico según el periodo vegetativo.',
+      ];
+    }
+  }
+
+  return { organic, chemical };
+};
+
 interface DiagnosticCardProps {
   report?: DiagnosticReport | any | null;
   isLoading?: boolean;
@@ -172,25 +328,28 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
         .filter(Boolean)
     : ['Monitorear avance de la lesión', 'Aislar material infectado'];
 
-  const organicTreatmentList: string[] = Array.isArray(
-    diagnostic?.organic_treatment || diagnostic?.organicTreatment
-  )
-    ? (diagnostic.organic_treatment || diagnostic.organicTreatment)
-        .map((x: any) => safeStr(x))
-        .filter(Boolean)
-    : diagnostic?.organic_solution || diagnostic?.organic_treatment
-    ? [safeStr(diagnostic.organic_solution || diagnostic.organic_treatment)]
-    : ['Aplicación de bioinsumos o extractos preventivos.'];
+  const rawOrganic =
+    diagnostic?.organic_solution ||
+    diagnostic?.organic_treatment ||
+    diagnostic?.organicTreatment ||
+    diagnostic?.biological_control ||
+    diagnostic?.biologicalControl;
 
-  const chemicalTreatmentList: string[] = Array.isArray(
-    diagnostic?.chemical_treatment || diagnostic?.chemicalTreatment
-  )
-    ? (diagnostic.chemical_treatment || diagnostic.chemicalTreatment)
-        .map((x: any) => safeStr(x))
-        .filter(Boolean)
-    : diagnostic?.chemical_solution || diagnostic?.chemical_treatment
-    ? [safeStr(diagnostic.chemical_solution || diagnostic.chemical_treatment)]
-    : ['Consultar agrónomo de zona para rotación de molécula.'];
+  const rawChemical =
+    diagnostic?.chemical_solution ||
+    diagnostic?.chemical_treatment ||
+    diagnostic?.chemicalTreatment ||
+    diagnostic?.technical_intervention ||
+    diagnostic?.technicalIntervention;
+
+  const treatments = getTreatmentRecommendations(
+    `${scientificName} ${diseaseName}`,
+    rawOrganic,
+    rawChemical
+  );
+
+  const organicTreatmentList: string[] = treatments.organic;
+  const chemicalTreatmentList: string[] = treatments.chemical;
 
   const dosage = safeStr(
     diagnostic?.dosage_backpack_20l || diagnostic?.dosage,
@@ -286,7 +445,7 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
   const formattedConfidence = `${confidencePercent}%`;
 
   const handleCopySummary = () => {
-    const text = `[AgroScan AI Diagnostic Report]\nCrop: ${cropType} (${plotIdentifier})\nDisease: ${diseaseName} (${pathogenBadge.label})\nSeverity: ${severityLevel} | Confidence: ${formattedConfidence}\nSummary: ${summary}\nDosage: ${dosage}\nDate: ${formattedDate()}`;
+    const text = `[AgroScan AI - Reporte Fitosanitario]\nCultivo: ${cropType} (${plotIdentifier})\nEnfermedad: ${diseaseName} (${pathogenBadge.label})\nSeveridad: ${severityLevel} | Confianza: ${formattedConfidence}\nResumen: ${summary}\nControl Orgánico: ${organicTreatmentList.join('; ')}\nControl Químico: ${chemicalTreatmentList.join('; ')}\nDosis Bomba: ${dosage}\nFecha: ${formattedDate()}`;
     
     // Batch DOM write in requestAnimationFrame to eliminate layout thrashing
     requestAnimationFrame(() => {
