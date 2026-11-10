@@ -27,16 +27,19 @@ export interface RawDiagnosticResponse {
 }
 
 export interface WorkerProcessRequest {
-  imageFile: File | Blob;
+  imageFile: File | Blob | string | ArrayBuffer;
   maxWidth?: number;
   maxHeight?: number;
   quality?: number;
+  convertToBase64?: boolean;
 }
 
 export interface WorkerProcessResponse {
   success: boolean;
   optimizedBlob?: Blob;
   previewUrl?: string;
+  base64?: string;
+  arrayBuffer?: ArrayBuffer;
   originalWidth?: number;
   originalHeight?: number;
   optimizedWidth?: number;

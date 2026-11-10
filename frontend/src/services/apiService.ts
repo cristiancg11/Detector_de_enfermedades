@@ -1,27 +1,30 @@
 /**
- * AgroScan AI - API Service Layer.
+ * AgroScan AI - API Service Layer with Security Interceptors.
+ *
  * Handles HTTP communication with the FastAPI backend and MongoDB Atlas persistence.
- * Attaches JWT Bearer authentication to diagnostic and history requests.
+ * Attaches JWT Bearer authentication to requests and intercepts HTTP 401/403
+ * responses to automatically flush expired sessions and invoke AuthGate.
  */
 
 import { AuthSession } from '../models/AuthSession';
 import { CropDiagnosticRequest } from '../models/CropDiagnosticRequest';
 import { DiagnosticReport } from '../models/DiagnosticReport';
+import { DosageCalculationRequest, DosagePrescription } from '../models/DosagePrescription';
+import { DiagnosticApiClient } from './DiagnosticApiClient';
 import {
   ChatMessage,
-  ChatFollowUpRequest,
   ChatFollowUpResponse,
   RawDiagnosticResponse,
-  UserProfile
+  UserProfile,
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+export const API_BASE_URL = 'http://localhost:8000/api/v1';
 
 export class ApiService {
   /**
    * Helper to construct headers with Bearer token authentication.
    */
-  private static getAuthHeaders(includeJson: boolean = false): Record<string, string> {
+  public static getAuthHeaders(includeJson: boolean = false): Record<string, string> {
     const headers: Record<string, string> = {};
     if (includeJson) {
       headers['Content-Type'] = 'application/json';
@@ -34,39 +37,44 @@ export class ApiService {
   }
 
   /**
+   * Centralized HTTP fetch interceptor that attaches JWT Bearer token
+   * and automatically flushes expired sessions upon HTTP 401 Unauthorized or 403 Forbidden.
+   */
+  public static async authFetch(
+    url: string,
+    options: RequestInit = {},
+    includeJson: boolean = false
+  ): Promise<Response> {
+    const authHeaders = this.getAuthHeaders(includeJson);
+    const headers = {
+      ...authHeaders,
+      ...((options.headers as Record<string, string>) || {}),
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    // Check for HTTP 401 Unauthorized or HTTP 403 Forbidden
+    if (response.status === 401 || response.status === 403) {
+      console.warn(
+        `[Security Interceptor] HTTP ${response.status} detected at ${url}. Flushing expired session and invoking AuthGate.`
+      );
+      AuthSession.clearSession(); // Notifies listeners, immediately invoking AuthGate without reloading!
+    }
+
+    return response;
+  }
+
+  /**
    * Submits a diagnostic request to the backend with authenticated user headers.
    */
   public static async submitDiagnostic(
     request: CropDiagnosticRequest,
     previewUrl?: string
   ): Promise<DiagnosticReport> {
-    const formData = request.toFormData();
-    const headers = this.getAuthHeaders(false);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/diagnose`, {
-        method: 'POST',
-        headers,
-        body: formData,
-      });
-
-      if (!response.ok) {
-        let errorMessage = `Server error (${response.status})`;
-        try {
-          const errData = await response.json();
-          errorMessage = errData.detail || errorMessage;
-        } catch {
-          // Ignore JSON parse error
-        }
-        throw new Error(errorMessage);
-      }
-
-      const rawData: RawDiagnosticResponse = await response.json();
-      return DiagnosticReport.fromJSON(rawData, previewUrl);
-    } catch (error: any) {
-      console.warn('Backend connection failed or server unreachable:', error?.message);
-      throw error;
-    }
+    return DiagnosticApiClient.getInstance().sendDiagnostic(request, previewUrl);
   }
 
   /**
@@ -76,16 +84,18 @@ export class ApiService {
     plotIdentifier?: string,
     limit: number = 20
   ): Promise<{ total: number; items: DiagnosticReport[] }> {
-    const headers = this.getAuthHeaders(true);
     const params = new URLSearchParams();
     if (plotIdentifier) params.append('plot_identifier', plotIdentifier);
     params.append('limit', limit.toString());
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/history?${params.toString()}`, {
-        method: 'GET',
-        headers,
-      });
+      const response = await this.authFetch(
+        `${API_BASE_URL}/history?${params.toString()}`,
+        {
+          method: 'GET',
+        },
+        true
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch history (${response.status})`);
@@ -112,7 +122,7 @@ export class ApiService {
     model: string;
   }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/health`, {
+      const response = await fetch(`${API_BASE_URL}/health`, {
         signal: AbortSignal.timeout(3500),
       });
       if (response.ok) {
@@ -131,25 +141,24 @@ export class ApiService {
 
   /**
    * Registers a new user account on the backend.
+   * Sends POST http://localhost:8000/api/v1/auth/register with JSON: { email, password, full_name, farm_name }
    */
   public static async register(data: {
     email: string;
     password: string;
     fullName: string;
     farmName: string;
-    municipality: string;
-    role: string;
+    municipality?: string;
+    role?: string;
   }): Promise<{ token: string; user: UserProfile }> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
         email: data.email,
         password: data.password,
         full_name: data.fullName,
         farm_name: data.farmName,
-        municipality: data.municipality,
-        role: data.role,
       }),
     });
 
@@ -165,17 +174,23 @@ export class ApiService {
     }
 
     const resData = await response.json();
+    console.log('[AgroScan API] User registered successfully:', resData);
+
+    const token = resData.access_token;
+    AuthSession.saveSession(token, resData);
+    console.log('[AgroScan API] Token and session persisted in AuthSession:', AuthSession.getToken());
+
     return {
-      token: resData.access_token,
+      token,
       user: {
-        id: resData.user.id,
-        email: resData.user.email,
-        fullName: resData.user.full_name,
-        farmName: resData.user.farm_name,
-        municipality: resData.user.municipality,
-        role: resData.user.role,
-        avatarUrl: resData.user.avatar_url,
-        createdAt: resData.user.created_at,
+        id: resData.user?.id || `usr-${Date.now()}`,
+        email: resData.user?.email || data.email,
+        fullName: resData.user?.full_name || data.fullName,
+        farmName: resData.user?.farm_name || data.farmName,
+        municipality: resData.user?.municipality || 'Túquerres (High Plateau)',
+        role: resData.user?.role || 'Smallholder Farmer',
+        avatarUrl: resData.user?.avatar_url,
+        createdAt: resData.user?.created_at || new Date().toISOString(),
       },
     };
   }
@@ -187,9 +202,9 @@ export class ApiService {
     email: string;
     password: string;
   }): Promise<{ token: string; user: UserProfile }> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(credentials),
     });
 
@@ -208,14 +223,14 @@ export class ApiService {
     return {
       token: resData.access_token,
       user: {
-        id: resData.user.id,
-        email: resData.user.email,
-        fullName: resData.user.full_name,
-        farmName: resData.user.farm_name,
-        municipality: resData.user.municipality,
-        role: resData.user.role,
-        avatarUrl: resData.user.avatar_url,
-        createdAt: resData.user.created_at,
+        id: resData.user?.id || `usr-${Date.now()}`,
+        email: resData.user?.email || credentials.email,
+        fullName: resData.user?.full_name || 'Farmer',
+        farmName: resData.user?.farm_name || 'Farm',
+        municipality: resData.user?.municipality || 'Nariño',
+        role: resData.user?.role || 'Smallholder Farmer',
+        avatarUrl: resData.user?.avatar_url,
+        createdAt: resData.user?.created_at || new Date().toISOString(),
       },
     };
   }
@@ -224,11 +239,13 @@ export class ApiService {
    * Fetches current authenticated farmer profile from the backend.
    */
   public static async getMe(): Promise<UserProfile> {
-    const headers = this.getAuthHeaders(true);
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
-      method: 'GET',
-      headers,
-    });
+    const response = await this.authFetch(
+      `${API_BASE_URL}/auth/me`,
+      {
+        method: 'GET',
+      },
+      true
+    );
 
     if (!response.ok) {
       throw new Error('Unauthorized or session expired');
@@ -248,39 +265,54 @@ export class ApiService {
   }
 
   /**
-   * Submits a contextual agronomic follow-up inquiry to Gemini 2.5 Flash.
+   * Submits a contextual agronomic follow-up inquiry to Gemini 2.5 Flash via DiagnosticApiClient.
    */
   public static async sendAgronomicChat(
     diagnosticId: string,
     message: string,
     chatHistory: ChatMessage[] = []
   ): Promise<ChatFollowUpResponse> {
-    const headers = this.getAuthHeaders(true);
-
-    const payload: ChatFollowUpRequest = {
-      diagnostic_id: diagnosticId,
+    return DiagnosticApiClient.getInstance().sendChatMessage(
+      diagnosticId,
       message,
-      chat_history: chatHistory,
-    };
+      chatHistory
+    );
+  }
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/diagnose/${diagnosticId}/chat`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    });
+  /**
+   * Dispatches field dosage calibration calculation with 401 interception.
+   */
+  public static async calculateDosage(
+    diagnosticId: string,
+    request: DosageCalculationRequest
+  ): Promise<DosagePrescription> {
+    try {
+      const response = await this.authFetch(
+        `${API_BASE_URL}/diagnose/${diagnosticId}/dosage`,
+        {
+          method: 'POST',
+          body: JSON.stringify(request),
+          signal: AbortSignal.timeout(6000),
+        },
+        true
+      );
 
-    if (!response.ok) {
-      let errorMsg = `Server error (${response.status})`;
-      try {
-        const errData = await response.json();
-        errorMsg = errData.detail || errorMsg;
-      } catch {
-        // fallback
+      if (!response.ok) {
+        let errMessage = `Dosage API error (${response.status})`;
+        try {
+          const errData = await response.json();
+          errMessage = errData.detail || errMessage;
+        } catch {
+          // ignore
+        }
+        throw new Error(errMessage);
       }
-      throw new Error(errorMsg);
-    }
 
-    return response.json();
+      const resData = await response.json();
+      return DosagePrescription.fromJSON(resData);
+    } catch (err: any) {
+      console.warn('Backend dosage endpoint unavailable, using local calculation:', err?.message);
+      return DosagePrescription.calculateLocal(request);
+    }
   }
 }
-
