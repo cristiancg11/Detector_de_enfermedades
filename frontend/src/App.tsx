@@ -40,6 +40,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeLanguageControls } from './components/ThemeLanguageControls';
+import { HistoryStorageService } from './services/historyStorageService';
+import { ConsultationHistoryDrawer } from './components/ConsultationHistoryDrawer';
 
 const AppDashboard: React.FC = () => {
   const { t } = useLanguage();
@@ -56,6 +58,10 @@ const AppDashboard: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [diagnosticError, setDiagnosticError] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [isConsultationDrawerOpen, setIsConsultationDrawerOpen] = useState<boolean>(false);
+  const [consultationCount, setConsultationCount] = useState<number>(() =>
+    HistoryStorageService.getConsultationHistory().length
+  );
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [chatReport, setChatReport] = useState<DiagnosticReport | null>(null);
@@ -141,8 +147,22 @@ const AppDashboard: React.FC = () => {
       }
     });
 
+    const handleHistoryUpdate = () => {
+      setConsultationCount(HistoryStorageService.getConsultationHistory().length);
+      refreshMetrics();
+    };
+
+    const handleOpenHistoryDrawer = () => {
+      setIsConsultationDrawerOpen(true);
+    };
+
+    window.addEventListener('agroscan-history-updated', handleHistoryUpdate);
+    window.addEventListener('open-consultation-history', handleOpenHistoryDrawer);
+
     return () => {
       unsubscribe();
+      window.removeEventListener('agroscan-history-updated', handleHistoryUpdate);
+      window.removeEventListener('open-consultation-history', handleOpenHistoryDrawer);
     };
   }, []);
 
@@ -227,8 +247,14 @@ const AppDashboard: React.FC = () => {
       // 1. Dispatch authenticated request to FastAPI backend (saved into MongoDB Atlas with Bearer token)
       const report = await ApiService.submitDiagnostic(request, previewUrl);
 
-      // 2. Persist into localStorage via OOP FarmPlotHistoryManager
+      // 2. Persist into localStorage & backend via FarmPlotHistoryManager and HistoryStorageService
       FarmPlotHistoryManager.saveReport(report);
+      await HistoryStorageService.saveConsultation(
+        report,
+        request.cropType,
+        request.plotIdentifier,
+        previewUrl
+      );
       setCurrentReport(report);
       setDiagnosticError(null);
       refreshMetrics();
@@ -275,6 +301,12 @@ const AppDashboard: React.FC = () => {
       );
 
       FarmPlotHistoryManager.saveReport(fallbackReport);
+      await HistoryStorageService.saveConsultation(
+        fallbackReport,
+        request.cropType,
+        request.plotIdentifier,
+        previewUrl
+      );
       setCurrentReport(fallbackReport);
       refreshMetrics();
 
@@ -295,7 +327,7 @@ const AppDashboard: React.FC = () => {
     <ErrorBoundary>
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden transition-colors duration-200">
         {/* Top Navbar Header */}
-        <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/90 dark:border-slate-800 shadow-xs transition-colors duration-200">
+        <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             {/* Brand Logo & Andean Subtitle */}
             <div className="flex items-center gap-3.5 shrink-0">
@@ -375,6 +407,22 @@ const AppDashboard: React.FC = () => {
                   </button>
                 </div>
               )}
+
+              {/* Consultation History Button */}
+              <button
+                type="button"
+                onClick={() => setIsConsultationDrawerOpen(true)}
+                className="relative inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-bold transition-all active:scale-95 shadow-xs"
+                title="Historial de Consultas Fitosanitarias"
+              >
+                <span>📋</span>
+                <span className="hidden sm:inline">Historial de Consultas</span>
+                {consultationCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[11px] leading-tight">
+                    {consultationCount}
+                  </span>
+                )}
+              </button>
 
               {/* History Drawer Toggle Button */}
               <button
@@ -627,6 +675,20 @@ const AppDashboard: React.FC = () => {
             </ErrorBoundary>
           </section>
         </main>
+
+        {/* Consultation History Slide-Over Drawer */}
+        <ConsultationHistoryDrawer
+          isOpen={isConsultationDrawerOpen}
+          onClose={() => setIsConsultationDrawerOpen(false)}
+          onSelectReport={(report) => {
+            setCurrentReport(report);
+            setSelectedCrop(report.cropType);
+            setPlotIdentifier(report.plotIdentifier);
+            setTimeout(() => {
+              diagnosticRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }}
+        />
 
         {/* History Drawer Sidebar Modal */}
         <PlotHistoryDrawer

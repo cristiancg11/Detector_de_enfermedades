@@ -851,6 +851,18 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
 
             <button
               type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('open-consultation-history'));
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-all text-xs sm:text-sm font-bold shadow-sm active:scale-95"
+              title="Abrir historial de consultas previas"
+            >
+              <span>📋</span>
+              <span>Historial</span>
+            </button>
+
+            <button
+              type="button"
               onClick={handlePrintOrDownloadPDF}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-all text-xs sm:text-sm font-bold shadow-sm active:scale-95"
               title="Descargar Ficha Técnica PDF o imprimir receta fitosanitaria"
