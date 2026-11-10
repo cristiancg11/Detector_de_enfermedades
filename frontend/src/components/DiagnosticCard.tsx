@@ -273,13 +273,42 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
   // 4. Defensive Null-Safe Field Normalization
   const diagnostic = report;
 
-  const diseaseName = safeStr(
-    diagnostic?.common_disease_name ||
-      diagnostic?.disease_name ||
-      diagnostic?.diseaseName ||
-      diagnostic?.disease,
-    'Patología Foliar no determinada'
-  );
+  /**
+   * Resolves accurate commercial crop disease title replacing unresolved fallbacks.
+   */
+  const resolveAccurateTitle = (diag: any): string => {
+    const sci = safeStr(diag?.scientific_name || diag?.scientificName).toLowerCase();
+    const comm = safeStr(
+      diag?.common_disease_name ||
+        diag?.disease_name ||
+        diag?.diseaseName ||
+        diag?.disease
+    );
+    if (
+      comm &&
+      comm !== 'Patología Foliar no determinada' &&
+      comm !== 'No determinada' &&
+      comm !== 'Patología foliar no determinada'
+    ) {
+      return comm;
+    }
+    if (sci.includes('phytophthora') || sci.includes('infestans')) return 'Tizón Tardío (Gota de la Papa)';
+    if (sci.includes('alternaria') || sci.includes('solani')) return 'Tizón Temprano (Alternaria)';
+    if (sci.includes('hemileia') || sci.includes('vastatrix')) return 'Roya del Cafeto';
+    if (sci.includes('botrytis') || sci.includes('cinerea')) return 'Moho Gris (Botrytis)';
+    if (sci.includes('xanthomonas')) return 'Mancha Bacteriana';
+    if (sci.includes('puccinia') || sci.includes('sorghi')) return 'Roya Común del Maíz';
+    if (sci.includes('phyllachora') || sci.includes('maydis')) return 'Mancha de Asfalto del Maíz';
+    if (sci.includes('fusarium')) return 'Marchitez por Fusarium';
+    if (sci.includes('cercospora')) return 'Mancha de Cercospora';
+    return (
+      diag?.scientific_name ||
+      diag?.scientificName ||
+      'Diagnóstico Fitosanitario Especializado'
+    );
+  };
+
+  const diseaseName = resolveAccurateTitle(diagnostic);
   const scientificName = safeStr(
     diagnostic?.scientific_name || diagnostic?.scientificName,
     'No especificado'
