@@ -13,26 +13,31 @@
   }
 
   body {
-    background-color: #f8fafc;
-    color: #0f172a;
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(5, 150, 105, 0.06) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(2, 132, 199, 0.06) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(217, 119, 6, 0.04) 0px, transparent 55%);
+    background-color: #f6f1e8;
+    color: #1c1815;
+    font-family: 'Source Sans 3', 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    background-image:
+      linear-gradient(180deg, rgba(154, 78, 28, 0.06), transparent 3px),
+      radial-gradient(ellipse at top, rgba(30, 58, 95, 0.05), transparent 42%);
     background-attachment: fixed;
     min-height: 100vh;
+    letter-spacing: 0;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   html.dark body,
   body.dark {
-    background-color: #020617;
-    color: #f8fafc;
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(5, 150, 105, 0.12) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(2, 132, 199, 0.12) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 55%);
+    background-color: #14110e;
+    color: #f6f1e8;
+    background-image:
+      linear-gradient(180deg, rgba(196, 122, 74, 0.35), transparent 3px),
+      radial-gradient(ellipse at top, rgba(61, 100, 148, 0.16), transparent 46%);
+  }
+
+  h1, h2, h3 {
+    font-family: 'Fraunces', 'Source Serif 4', Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -70,33 +75,33 @@
 
 /* Pristine Surface Classes */
 .glass-panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  background: #fffdf9;
+  border: 1px solid #e4dcd0;
+  box-shadow: 0 16px 32px -24px rgba(28, 24, 21, 0.28);
   will-change: transform, opacity;
   transform: translateZ(0);
 }
 
 .dark .glass-panel {
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  background: #1c1815;
+  border: 1px solid #2e2925;
+  box-shadow: 0 16px 32px -24px rgba(0, 0, 0, 0.45);
   will-change: transform, opacity;
   transform: translateZ(0);
 }
 
 .glass-panel-glow {
-  background: #ffffff;
-  border: 1px solid #a7f3d0;
-  box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.12), 0 8px 10px -6px rgba(5, 150, 105, 0.06);
+  background: #fffdf9;
+  border: 1px solid #c5d5e8;
+  box-shadow: 0 16px 32px -22px rgba(30, 58, 95, 0.28);
   will-change: transform, opacity;
   transform: translateZ(0);
 }
 
 .dark .glass-panel-glow {
-  background: #0f172a;
-  border: 1px solid #065f46;
-  box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.2), 0 8px 10px -6px rgba(5, 150, 105, 0.1);
+  background: #1c1815;
+  border: 1px solid #1e3a5f;
+  box-shadow: 0 16px 32px -22px rgba(30, 58, 95, 0.5);
   will-change: transform, opacity;
   transform: translateZ(0);
 }
@@ -108,14 +113,62 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f3eee6;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #cfc3b2;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #059669;
+  background: #1e3a5f;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1c1815;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4c433b;
+}
+
+/* Editorial finish: serif titles and sharper cards. Structure stays the same. */
+.font-black {
+  font-family: 'Fraunces', 'Source Serif 4', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.rounded-3xl {
+  border-radius: 0.55rem;
+}
+
+.rounded-2xl {
+  border-radius: 0.4rem;
+}
+
+/* Print Stylesheet for Agronomic Technical Prescription Sheet (PDF / Print) */
+@media print {
+  header,
+  nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  .content-visibility-auto {
+    content-visibility: visible !important;
+  }
+
+  .shadow-card,
+  .shadow-sm,
+  .shadow-xs {
+    box-shadow: none !important;
+  }
 }

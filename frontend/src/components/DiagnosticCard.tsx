@@ -22,11 +22,11 @@ import {
   Activity,
   Layers,
   ArrowRight,
-  Download,
   MessageSquare,
   Calculator,
   Loader2,
   AlertOctagon,
+  Printer,
 } from 'lucide-react';
 import { DiagnosticReport } from '../models/DiagnosticReport';
 import { DosageCalculatorModal } from './DosageCalculatorModal';
@@ -487,27 +487,8 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
     });
   };
 
-  const handleExportJSON = () => {
-    let exportData = diagnostic;
-    if (typeof diagnostic?.toJSON === 'function') {
-      try {
-        exportData = diagnostic.toJSON();
-      } catch {
-        // Fallback to raw object
-      }
-    }
-    const jsonStr = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    // Batch DOM element creation and click in requestAnimationFrame to avoid forced reflow
-    requestAnimationFrame(() => {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `diagnostic_${diagnosticId}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+  const handlePrintOrDownloadPDF = () => {
+    window.print();
   };
 
   return (
@@ -849,24 +830,31 @@ export const DiagnosticCard: React.FC<DiagnosticCardProps> = ({
               <span>Calcular Dosis Bomba 20L y Clima</span>
             </button>
 
-            {onOpenChat && (
-              <button
-                type="button"
-                onClick={() => onOpenChat(diagnostic)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white transition-all text-xs font-bold shadow-sm active:scale-95"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Hacer Pregunta al Agrónomo IA</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenChat) {
+                  onOpenChat(diagnostic);
+                } else {
+                  window.dispatchEvent(
+                    new CustomEvent('open-agronomic-chat', { detail: diagnostic })
+                  );
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white transition-all text-xs font-bold shadow-sm active:scale-95"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-emerald-300" />
+              <span>Hacer Pregunta al Agrónomo IA</span>
+            </button>
 
             <button
               type="button"
-              onClick={handleExportJSON}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-all text-xs font-bold shadow-sm"
+              onClick={handlePrintOrDownloadPDF}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-all text-xs font-bold shadow-sm active:scale-95"
+              title="Descargar Ficha Técnica PDF o imprimir receta fitosanitaria"
             >
-              <Download className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-              <span>Descargar Receta JSON</span>
+              <Printer className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+              <span>Descargar Ficha Técnica PDF / Imprimir</span>
             </button>
 
             <button
