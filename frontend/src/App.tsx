@@ -10,14 +10,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  History,
   Leaf,
   Cpu,
-  MapPin,
   User,
   LogOut,
   Trees,
-  Database,
   BarChart3,
   ArrowUpRight,
   ShieldAlert,
@@ -39,9 +36,9 @@ import { AuthGate } from './components/AuthGate';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
-import { ThemeLanguageControls } from './components/ThemeLanguageControls';
 import { HistoryStorageService } from './services/historyStorageService';
 import { ConsultationHistoryDrawer } from './components/ConsultationHistoryDrawer';
+import { Navbar } from './components/Navbar';
 
 const AppDashboard: React.FC = () => {
   const { t } = useLanguage();
@@ -341,127 +338,14 @@ const AppDashboard: React.FC = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden transition-colors duration-200">
-        {/* Top Navbar Header */}
-        <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-            {/* Brand Logo & Andean Subtitle */}
-            <div className="flex items-center gap-3.5 shrink-0">
-              <div className="w-11 h-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-emerald-soft">
-                <Leaf className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                    AgroScan<span className="text-emerald-600 dark:text-emerald-400">.AI</span>
-                  </h1>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-[10px] font-extrabold tracking-wider uppercase border border-emerald-200 dark:border-emerald-500/30">
-                    Atlas v2.0
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-medium">
-                  <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                  {t('andeanHighlands')}
-                </p>
-              </div>
-            </div>
-
-            {/* Right Header Controls */}
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              {/* MongoDB Atlas & AI Engine Live Status Pill */}
-              <div className="hidden xl:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shadow-xs transition-colors">
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    backendStatus.gemini_configured ? 'bg-emerald-500' : 'bg-amber-500'
-                  } animate-pulse`}
-                />
-                <span className="text-slate-700 dark:text-slate-300 font-mono text-[11px]">
-                  {backendStatus.model || 'Gemini 2.5 Flash'}
-                </span>
-                <span className="text-slate-300 dark:text-slate-600">|</span>
-                <span className="flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-400 font-mono font-medium">
-                  <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>
-                    MongoDB Atlas{' '}
-                    {backendStatus.mongodb_connected
-                      ? `(${t('systemStatusLive')})`
-                      : `(${t('systemStatusSynced')})`}
-                  </span>
-                </span>
-              </div>
-
-              {/* Logged-In Farmer User Profile Badge & Functional Log Out Button */}
-              {currentUser && (
-                <div className="flex items-center gap-2.5 p-1.5 pl-2.5 pr-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-500/40 transition-all shadow-xs">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-600/40 flex items-center justify-center text-emerald-800 dark:text-emerald-300 font-bold text-xs shrink-0 overflow-hidden">
-                    {currentUser.avatarUrl ? (
-                      <img
-                        src={currentUser.avatarUrl}
-                        alt={currentUser.fullName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span>{currentUser.fullName.slice(0, 2).toUpperCase()}</span>
-                    )}
-                  </div>
-                  <div className="hidden sm:block text-left leading-tight">
-                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[130px]">
-                      {currentUser.fullName}
-                    </p>
-                    <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium truncate max-w-[130px]">
-                      {currentUser.farmName}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    title={t('logOut')}
-                    className="ml-1.5 px-3 py-1.5 rounded-xl text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/80 transition-all flex items-center gap-1.5 font-bold text-xs active:scale-95 shadow-xs"
-                  >
-                    <LogOut className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                    <span>{t('logOut')}</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Consultation History Button */}
-              <button
-                type="button"
-                onClick={() => setIsConsultationDrawerOpen(true)}
-                className="relative inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-bold transition-all active:scale-95 shadow-xs"
-                title="Historial de Consultas Fitosanitarias"
-              >
-                <span>📋</span>
-                <span className="hidden sm:inline">Historial de Consultas</span>
-                {consultationCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[11px] leading-tight">
-                    {consultationCount}
-                  </span>
-                )}
-              </button>
-
-              {/* History Drawer Toggle Button */}
-              <button
-                type="button"
-                onClick={() => setIsDrawerOpen(true)}
-                className="relative inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all hover:border-emerald-300 dark:hover:border-emerald-500/40 active:scale-95 shadow-xs"
-              >
-                <History className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="hidden sm:inline">{t('farmPlotsHistory')}</span>
-                {historyCount > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-[11px] flex items-center justify-center">
-                    {historyCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Corner Divider */}
-              <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 hidden sm:block" />
-
-              {/* Far Top-Right Corner: Theme & Language Controls Widget */}
-              <ThemeLanguageControls />
-            </div>
-          </div>
-        </header>
+        {/* Streamlined 3-Zone Navigation Header */}
+        <Navbar
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          historyCount={consultationCount || historyCount}
+          onOpenHistory={() => setIsConsultationDrawerOpen(true)}
+          backendStatus={backendStatus}
+        />
 
         {/* Main Bento Grid Dashboard Content */}
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8 z-10 w-full">
