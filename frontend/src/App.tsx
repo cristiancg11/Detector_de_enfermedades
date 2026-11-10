@@ -45,9 +45,14 @@ import { ConsultationHistoryDrawer } from './components/ConsultationHistoryDrawe
 
 const AppDashboard: React.FC = () => {
   const { t } = useLanguage();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() =>
-    AuthSession.isAuthenticated()
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return Boolean(
+      AuthSession.isAuthenticated() ||
+      localStorage.getItem('token') ||
+      localStorage.getItem('supabase_token') ||
+      AuthSession.getUser()
+    );
+  });
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => AuthSession.getUser());
   const [selectedCrop, setSelectedCrop] = useState<CropType>('Potato');
   const [plotIdentifier, setPlotIdentifier] = useState<string>(() => {
@@ -167,6 +172,8 @@ const AppDashboard: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('supabase_token');
     AuthSession.logout();
     setCurrentUser(null);
     setIsAuthenticated(false);
@@ -318,8 +325,16 @@ const AppDashboard: React.FC = () => {
     }
   };
 
-  // Unauthenticated visitors are locked out completely from the DOM
-  if (!isAuthenticated) {
+  // Mandatory Protected Route / Forced Login Guard: Deny dashboard access until logged in
+  const isUserAuthenticated = Boolean(
+    isAuthenticated &&
+    (AuthSession.isAuthenticated() ||
+      localStorage.getItem('token') ||
+      localStorage.getItem('supabase_token') ||
+      currentUser)
+  );
+
+  if (!isUserAuthenticated) {
     return <AuthGate onLoginSuccess={handleAuthSuccess} />;
   }
 
