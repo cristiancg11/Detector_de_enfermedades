@@ -29,7 +29,7 @@ import { CropScanner } from './components/CropScanner';
 import { DiagnosticCard } from './components/DiagnosticCard';
 import { PlotHistoryDrawer } from './components/PlotHistoryDrawer';
 import { AuthModal } from './components/AuthModal';
-import { AgronomicChatModal } from './components/AgronomicChatModal';
+import { AgronomicChatDrawer } from './components/AgronomicChatDrawer';
 import { DosageCalculatorModal } from './components/DosageCalculatorModal';
 import { DosageCalculationRequest, DosagePrescription } from './models/DosagePrescription';
 import { AuthGate } from './components/AuthGate';
@@ -71,7 +71,6 @@ const AppDashboard: React.FC = () => {
   const [dosageReport, setDosageReport] = useState<DiagnosticReport | null>(null);
   const [historyCount, setHistoryCount] = useState<number>(0);
   const [criticalCount, setCriticalCount] = useState<number>(0);
-  const [monitoredPlotsCount, setMonitoredPlotsCount] = useState<number>(0);
   const [backendStatus, setBackendStatus] = useState<{
     status: string;
     gemini_configured: boolean;
@@ -94,10 +93,6 @@ const AppDashboard: React.FC = () => {
     // Count critical alerts
     const criticals = all.filter((r) => r.severityLevel === 'CRITICAL');
     setCriticalCount(criticals.length);
-
-    // Distinct plots count
-    const uniquePlots = new Set(all.map((r) => (r?.plotIdentifier || '').toLowerCase().trim()).filter(Boolean));
-    setMonitoredPlotsCount(uniquePlots.size || 1);
   };
 
   // Fetch plot history with active JWT authorization
@@ -158,13 +153,23 @@ const AppDashboard: React.FC = () => {
       setIsConsultationDrawerOpen(true);
     };
 
+    const handleCustomOpenChat = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        setChatReport(customEvent.detail);
+      }
+      setIsChatOpen(true);
+    };
+
     window.addEventListener('agroscan-history-updated', handleHistoryUpdate);
     window.addEventListener('open-consultation-history', handleOpenHistoryDrawer);
+    window.addEventListener('open-agronomic-chat', handleCustomOpenChat);
 
     return () => {
       unsubscribe();
       window.removeEventListener('agroscan-history-updated', handleHistoryUpdate);
       window.removeEventListener('open-consultation-history', handleOpenHistoryDrawer);
+      window.removeEventListener('open-agronomic-chat', handleCustomOpenChat);
     };
   }, []);
 
@@ -400,9 +405,9 @@ const AppDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* BENTO GRID: Quick Overview Metrics (Row 1) */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Bento Tile 1: Total Scans */}
+          {/* BENTO GRID: Quick Overview Metrics (Row 1) - Streamlined to 3 Essential Cards */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Bento Tile 1: Muestras Procesadas */}
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -415,7 +420,7 @@ const AppDashboard: React.FC = () => {
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-black text-slate-900 dark:text-white font-mono">
-                    {historyCount}
+                    {consultationCount || historyCount}
                   </span>
                   <span className="text-xs text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-0.5">
                     <ArrowUpRight className="w-3.5 h-3.5" />
@@ -428,7 +433,7 @@ const AppDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Bento Tile 2: Critical Plots Alert */}
+            {/* Bento Tile 2: Alertas Activas */}
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -463,32 +468,7 @@ const AppDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Bento Tile 3: Monitored Plots Overview */}
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  {t('metricMonitoredLots')}
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 flex items-center justify-center text-sky-600 dark:text-sky-400 group-hover:scale-105 transition-transform">
-                  <Trees className="w-4 h-4" />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-slate-900 dark:text-white font-mono">
-                    {monitoredPlotsCount}
-                  </span>
-                  <span className="text-xs text-sky-700 dark:text-sky-400 font-bold">
-                    {t('metricParcelsMapped')}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                  {t('metricPlotIdentifier')}
-                </p>
-              </div>
-            </div>
-
-            {/* Bento Tile 4: High-Tech Processing Engine */}
+            {/* Bento Tile 3: High-Tech Processing Engine / Optimización Web Worker */}
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-card hover:shadow-card-hover flex flex-col justify-between transition-all group">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -500,8 +480,11 @@ const AppDashboard: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-base font-black text-slate-900 dark:text-white">
+                  <span className="text-lg font-black text-slate-900 dark:text-white">
                     OffscreenCanvas
+                  </span>
+                  <span className="text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
+                    INP &lt; 50ms
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
@@ -575,6 +558,18 @@ const AppDashboard: React.FC = () => {
           </section>
         </main>
 
+        {/* Floating Agronomic AI Chatbot Trigger */}
+        <button
+          type="button"
+          onClick={() => setIsChatOpen(true)}
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 border border-emerald-400/40 hover:shadow-emerald-500/25 active:scale-95 group"
+          title="Asistente IA Agronómico"
+          aria-label="Abrir Asistente IA Agronómico"
+        >
+          <span className="text-xl transition-transform group-hover:scale-110">💬</span>
+          <span className="text-sm font-semibold tracking-wide">Chat Agrónomo IA</span>
+        </button>
+
         {/* Consultation History Slide-Over Drawer */}
         <ConsultationHistoryDrawer
           isOpen={isConsultationDrawerOpen}
@@ -611,15 +606,13 @@ const AppDashboard: React.FC = () => {
           onAuthSuccess={handleAuthSuccess}
         />
 
-        {/* Interactive Agronomic Follow-up Chat Assistant */}
-        {(chatReport || currentReport) && (
-          <AgronomicChatModal
-            isOpen={isChatOpen}
-            onClose={() => setIsChatOpen(false)}
-            report={chatReport || currentReport!}
-            currentUser={currentUser}
-          />
-        )}
+        {/* Interactive Agronomic Follow-up Chat Assistant Drawer */}
+        <AgronomicChatDrawer
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          report={chatReport || currentReport}
+          currentUser={currentUser}
+        />
 
         {/* AI Backpack Sprayer Dosage Calculator Modal */}
         {(dosageReport || currentReport) && (

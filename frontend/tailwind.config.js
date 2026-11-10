@@ -8,37 +8,65 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Ink navy and warm stone. Existing emerald/slate classes pick this up
+        // so the product reads as an editorial atlas instead of a green dashboard.
+        emerald: {
+          50: '#f4f7fb',
+          100: '#e6eef6',
+          200: '#c5d5e8',
+          300: '#96b0d0',
+          400: '#6486b0',
+          500: '#3d6494',
+          600: '#1e3a5f',
+          700: '#172e4c',
+          800: '#12243c',
+          900: '#0e1c2e',
+          950: '#081018',
+        },
+        slate: {
+          50: '#faf7f2',
+          100: '#f3eee6',
+          200: '#e4dcd0',
+          300: '#cfc3b2',
+          400: '#a89884',
+          500: '#847566',
+          600: '#675c50',
+          700: '#4c433b',
+          800: '#2e2925',
+          900: '#1c1815',
+          950: '#12100e',
+        },
         agro: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
-          950: '#052e16',
+          50: '#f4f7fb',
+          100: '#e6eef6',
+          200: '#c5d5e8',
+          300: '#96b0d0',
+          400: '#6486b0',
+          500: '#3d6494',
+          600: '#1e3a5f',
+          700: '#172e4c',
+          800: '#12243c',
+          900: '#0e1c2e',
+          950: '#081018',
         },
         brand: {
-          emerald: '#059669', // Rich Forest Emerald
-          mint: '#10b981',    // Vibrant Andean Mint
-          teal: '#0d9488',    // Deep Teal
-          cyan: '#0284c7',    // Precision Sky
-          amber: '#d97706',   // Warm Alert Amber
-          rose: '#e11d48',    // Critical Alert Rose
+          emerald: '#1e3a5f',
+          mint: '#3d6494',
+          teal: '#1f4f5b',
+          cyan: '#1e3a5f',
+          amber: '#9a4e1c',
+          rose: '#9f1239',
         }
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Source Sans 3', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       boxShadow: {
-        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
-        'card-hover': '0 12px 28px -4px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04)',
-        'emerald-soft': '0 8px 24px -4px rgba(5, 150, 105, 0.20)',
-        'amber-soft': '0 8px 24px -4px rgba(217, 119, 6, 0.20)',
+        'card': '0 1px 0 rgba(28, 24, 21, 0.04), 0 16px 32px -24px rgba(28, 24, 21, 0.28)',
+        'card-hover': '0 18px 36px -22px rgba(28, 24, 21, 0.32)',
+        'emerald-soft': '0 10px 20px -12px rgba(30, 58, 95, 0.45)',
+        'amber-soft': '0 10px 20px -12px rgba(154, 78, 28, 0.4)',
       },
       animation: {
         'scan': 'scan 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite',

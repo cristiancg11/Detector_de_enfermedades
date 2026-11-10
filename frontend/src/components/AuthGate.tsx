@@ -237,7 +237,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ children, onLoginSuccess }) 
       </div>
 
       {/* LEFT / HERO PANEL (Hidden on small screens, 50% width on desktop lg:flex) */}
-      <section className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 xl:p-16 overflow-hidden bg-gradient-to-br from-emerald-50/80 via-slate-50 to-teal-50/60 dark:from-slate-950 dark:via-emerald-950/60 dark:to-slate-950 border-r border-slate-200 dark:border-slate-800/80 transition-colors duration-200">
+      <section className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 xl:p-16 overflow-hidden bg-slate-100 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800/80 transition-colors duration-200">
         {/* Agricultural Ambient Lighting Circles */}
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />

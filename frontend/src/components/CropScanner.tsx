@@ -261,7 +261,7 @@ export const CropScanner: React.FC<CropScannerProps> = ({
   return (
     <div className="relative rounded-3xl p-6 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-card hover:shadow-card-hover transition-colors overflow-hidden">
       {/* Decorative Gradient Bar */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-500" />
+      <div className="absolute top-0 left-0 right-0 h-1 bg-[#9a4e1c]" />
 
       {/* Section Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-100 dark:border-slate-800">
